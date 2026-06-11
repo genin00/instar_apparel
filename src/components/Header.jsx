@@ -7,16 +7,17 @@ import config from "../config.js";
 // ── LOGO SVG ────────────────────────────────────────────────
 export const InstarLogo = ({ size = 36, white = false }) => (
   <img
-    src="/logoinstar.svg"
-    width={size}
-    height={size}
+    src="/instarapparellogo.png"
     style={{
-      objectFit: "contain",
-      filter: white ? "brightness(0) invert(1)" : "none",
+      width:      "40px",
+      height:     "40px",
+      objectFit:  "contain",
+      filter:     white ? "brightness(0) invert(1)" : "none",
+      display:    "block",
+      flexShrink: 0,
     }}
   />
 );
-
 // ── HEADER COMPONENT ────────────────────────────────────────
 export default function Header({
   halaman      = "beranda",
@@ -78,30 +79,30 @@ export default function Header({
 
         {/* Logo — muncul di brand header */}
         {isBrandHeader && !isSubPage && (
-          <>
-            <InstarLogo size={34} white />
-            <div style={{ marginLeft: "2px" }}>
-              <div style={{
-                fontWeight:    900,
-                fontSize:      "16px",
-                letterSpacing: "3px",
-                color:         "#FFFFFF",
-                lineHeight:    1,
-              }}>
-                INSTAR
-              </div>
-              <div style={{
-                fontSize:      "9px",
-                letterSpacing: "4px",
-                color:         "#6B7280",
-                lineHeight:    1,
-                marginTop:     "2px",
-              }}>
-                APPAREL
-              </div>
-            </div>
-          </>
-        )}
+  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+    <InstarLogo size={34} white />
+    <div>
+      <div style={{
+        fontWeight:    900,
+        fontSize:      "16px",
+        letterSpacing: "3px",
+        color:         "#FFFFFF",
+        lineHeight:    1,
+      }}>
+        INSTAR
+      </div>
+      <div style={{
+        fontSize:      "9px",
+        letterSpacing: "4px",
+        color:         "#6B7280",
+        lineHeight:    1,
+        marginTop:     "2px",
+      }}>
+        APPAREL
+      </div>
+    </div>
+  </div>
+)}
 
         {/* Judul halaman — muncul di sub-page */}
         {judul && (

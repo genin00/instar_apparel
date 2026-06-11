@@ -26,11 +26,25 @@ const load = (key, fallback) => {
 const save = (key, val) => {
   try { localStorage.setItem(key, JSON.stringify(val)); } catch {}
 };
+const cekIntroHariIni = () => {
+  try {
+    const terakhir = localStorage.getItem("instar_intro_tanggal");
+    const hari_ini = new Date().toDateString();
+    return terakhir === hari_ini;
+  } catch { return false; }
+};
+
+const simpanIntroHariIni = () => {
+  try {
+    localStorage.setItem("instar_intro_tanggal", new Date().toDateString());
+  } catch {}
+};
 
 export default function App() {
   const [introSelesai, setIntroSelesai] = useState(
-    () => load("instar_intro", false)
+  () => cekIntroHariIni()
   );
+
   const [tab,          setTab]          = useState("beranda");
   const [halaman,      setHalaman]      = useState(null);
   const [produkAktif,  setProdukAktif]  = useState(null);
@@ -49,8 +63,8 @@ export default function App() {
   // ── HANDLERS ──────────────────────────────────────────────
 
   const handleIntroSelesai = () => {
-    save("instar_intro", true);
-    setIntroSelesai(true);
+  simpanIntroHariIni();
+  setIntroSelesai(true);
   };
 
   const handleCustom = (produk) => {
