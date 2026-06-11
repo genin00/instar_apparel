@@ -5,41 +5,17 @@
 import config from "../config.js";
 
 // ── LOGO SVG ────────────────────────────────────────────────
-export const InstarLogo = ({ size = 36, white = false }) => {
-  const c = white ? "#FFFFFF" : "#0A0A0A";
-  return (
-    <svg
-      width={size}
-      height={size * 0.85}
-      viewBox="0 0 220 190"
-      fill="none"
-    >
-      {/* dot */}
-      <circle cx="72" cy="36" r="13" fill={c} />
-      {/* S-curve body */}
-      <path
-        d="M52 66 Q18 50 28 86 Q38 122 80 116 Q122 110 148 130 Q174 150 158 176 Q142 196 108 190 Q74 184 52 160"
-        stroke={c}
-        strokeWidth="20"
-        strokeLinecap="round"
-        fill="none"
-      />
-      {/* inner highlight */}
-      <path
-        d="M58 76 Q86 60 116 74 Q146 88 148 122"
-        stroke={white ? "rgba(255,255,255,0.3)" : "rgba(255,255,255,0.85)"}
-        strokeWidth="5"
-        strokeLinecap="round"
-        fill="none"
-      />
-      {/* lightning bolt */}
-      <path
-        d="M138 98 L124 124 L134 124 L120 152 L142 116 L130 116 Z"
-        fill={c}
-      />
-    </svg>
-  );
-};
+export const InstarLogo = ({ size = 36, white = false }) => (
+  <img
+    src="/logoinstar.svg"
+    width={size}
+    height={size}
+    style={{
+      objectFit: "contain",
+      filter: white ? "brightness(0) invert(1)" : "none",
+    }}
+  />
+);
 
 // ── HEADER COMPONENT ────────────────────────────────────────
 export default function Header({
