@@ -55,34 +55,15 @@ export default function Intro({ onSelesai }) {
         alignItems: "center",
         gap:        "20px",
       }}>
-        {/* Logo SVG */}
-        <svg
-          width="100"
-          height="86"
-          viewBox="0 0 220 190"
-          fill="none"
-        >
-          <circle cx="72" cy="36" r="13" fill="white" />
-          <path
-            d="M52 66 Q18 50 28 86 Q38 122 80 116 Q122 110 148 130 Q174 150 158 176 Q142 196 108 190 Q74 184 52 160"
-            stroke="white"
-            strokeWidth="20"
-            strokeLinecap="round"
-            fill="none"
-          />
-          <path
-            d="M58 76 Q86 60 116 74 Q146 88 148 122"
-            stroke="rgba(255,255,255,0.25)"
-            strokeWidth="5"
-            strokeLinecap="round"
-            fill="none"
-          />
-          <path
-            d="M138 98 L124 124 L134 124 L120 152 L142 116 L130 116 Z"
-            fill="white"
-          />
-        </svg>
-
+        <img
+  src="/instarapparellogo.png"
+  style={{
+    width: "120px",
+    height: "120px",
+    objectFit: "contain",
+    filter: "brightness(0) invert(1)",
+  }}
+/>
         {/* Brand name */}
         <div style={{ textAlign: "center" }}>
           <div style={{

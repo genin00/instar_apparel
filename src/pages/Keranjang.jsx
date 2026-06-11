@@ -56,7 +56,7 @@ export default function Keranjang({ items = [], onHapus, onCheckout, onLanjutBel
   }
 
   return (
-    <div style={{ background: "#F2F2F0", minHeight: "100vh", paddingBottom: "120px" }}>
+    <div style={{ background: "#F2F2F0", minHeight: "100vh", paddingBottom: "160px" }}>
       <Header halaman="keranjang" judul="Keranjang" />
 
       {/* ── PILIH SEMUA ── */}
