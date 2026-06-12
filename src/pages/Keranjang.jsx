@@ -8,7 +8,7 @@ import { ukuranTersedia } from "../data/products.js";
 
 const rp = (n) => "Rp " + n.toLocaleString("id-ID");
 
-export default function Keranjang({ items = [], onHapus, onCheckout, onLanjutBelanja }) {
+export default function Keranjang({ items = [], onHapus, onCheckout, onLanjutBelanja, onBack }) {
   const [dipilih, setDipilih] = useState([]);
 
   const totalHarga = items
@@ -30,7 +30,7 @@ export default function Keranjang({ items = [], onHapus, onCheckout, onLanjutBel
   if (items.length === 0) {
     return (
       <div style={{ background: "#F2F2F0", minHeight: "100vh", paddingBottom: "80px" }}>
-        <Header halaman="keranjang" judul="Keranjang" />
+        <Header halaman="keranjang" judul="Keranjang" onBack={onBack} />
         <div style={{
           display: "flex", flexDirection: "column", alignItems: "center",
           justifyContent: "center", padding: "80px 32px", textAlign: "center",

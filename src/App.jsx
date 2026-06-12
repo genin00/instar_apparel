@@ -1,36 +1,35 @@
 // ═══════════════════════════════════════════════════════════
 //  INSTAR APPAREL — APP.JSX (ROUTER UTAMA)
-//  Menghubungkan semua halaman
 // ═══════════════════════════════════════════════════════════
 
 import { useState, useEffect } from "react";
-import BottomNav    from "./components/BottomNav.jsx";
-import Intro        from "./pages/Intro.jsx";
-import Beranda      from "./pages/Beranda.jsx";
-import Produk       from "./pages/Produk.jsx";
+import BottomNav     from "./components/BottomNav.jsx";
+import Intro         from "./pages/Intro.jsx";
+import Beranda       from "./pages/Beranda.jsx";
+import Produk        from "./pages/Produk.jsx";
 import CustomBuilder from "./pages/CustomBuilder.jsx";
-import Keranjang    from "./pages/Keranjang.jsx";
-import Checkout     from "./pages/Checkout.jsx";
-import Pesanan      from "./pages/Pesanan.jsx";
-import Wishlist     from "./pages/Wishlist.jsx";
-import Support      from "./pages/Support.jsx";
-import Akun         from "./pages/Akun.jsx";
+import Keranjang     from "./pages/Keranjang.jsx";
+import Checkout      from "./pages/Checkout.jsx";
+import Pesanan       from "./pages/Pesanan.jsx";
+import Wishlist      from "./pages/Wishlist.jsx";
+import Support       from "./pages/Support.jsx";
+import Akun          from "./pages/Akun.jsx";
 
-// ── STORAGE HELPERS ─────────────────────────────────────────
 const load = (key, fallback) => {
   try {
     const val = localStorage.getItem(key);
     return val ? JSON.parse(val) : fallback;
   } catch { return fallback; }
 };
+
 const save = (key, val) => {
   try { localStorage.setItem(key, JSON.stringify(val)); } catch {}
 };
+
 const cekIntroHariIni = () => {
   try {
     const terakhir = localStorage.getItem("instar_intro_tanggal");
-    const hari_ini = new Date().toDateString();
-    return terakhir === hari_ini;
+    return terakhir === new Date().toDateString();
   } catch { return false; }
 };
 
@@ -41,30 +40,24 @@ const simpanIntroHariIni = () => {
 };
 
 export default function App() {
-  const [introSelesai, setIntroSelesai] = useState(
-  () => cekIntroHariIni()
-  );
-
-  const [tab,          setTab]          = useState("beranda");
-  const [halaman,      setHalaman]      = useState(null);
-  const [produkAktif,  setProdukAktif]  = useState(null);
-  const [keranjang,    setKeranjang]    = useState(() => load("instar_keranjang", []));
-  const [wishlist,     setWishlist]     = useState(() => load("instar_wishlist", []));
-  const [pesananList,  setPesananList]  = useState(() => load("instar_pesanan", []));
-  const [akun,         setAkun]         = useState(() => load("instar_akun", null));
+  const [introSelesai,  setIntroSelesai]  = useState(() => cekIntroHariIni());
+  const [tab,           setTab]           = useState("beranda");
+  const [halaman,       setHalaman]       = useState(null);
+  const [produkAktif,   setProdukAktif]   = useState(null);
+  const [keranjang,     setKeranjang]     = useState(() => load("instar_keranjang", []));
+  const [wishlist,      setWishlist]      = useState(() => load("instar_wishlist", []));
+  const [pesananList,   setPesananList]   = useState(() => load("instar_pesanan", []));
+  const [akun,          setAkun]          = useState(() => load("instar_akun", null));
   const [checkoutItems, setCheckoutItems] = useState([]);
 
-  // Simpan ke localStorage setiap ada perubahan
-  useEffect(() => { save("instar_keranjang", keranjang); }, [keranjang]);
-  useEffect(() => { save("instar_wishlist",  wishlist);  }, [wishlist]);
+  useEffect(() => { save("instar_keranjang", keranjang);   }, [keranjang]);
+  useEffect(() => { save("instar_wishlist",  wishlist);    }, [wishlist]);
   useEffect(() => { save("instar_pesanan",   pesananList); }, [pesananList]);
-  useEffect(() => { save("instar_akun",      akun);      }, [akun]);
-
-  // ── HANDLERS ──────────────────────────────────────────────
+  useEffect(() => { save("instar_akun",      akun);        }, [akun]);
 
   const handleIntroSelesai = () => {
-  simpanIntroHariIni();
-  setIntroSelesai(true);
+    simpanIntroHariIni();
+    setIntroSelesai(true);
   };
 
   const handleCustom = (produk) => {
@@ -75,19 +68,12 @@ export default function App() {
   const handleWishlist = (produk) => {
     setWishlist(prev => {
       const ada = prev.some(w => w.id === produk.id);
-      return ada
-        ? prev.filter(w => w.id !== produk.id)
-        : [...prev, produk];
+      return ada ? prev.filter(w => w.id !== produk.id) : [...prev, produk];
     });
   };
 
   const handleTambahKeranjang = (item) => {
     setKeranjang(prev => [...prev, item]);
-    setHalaman("keranjang-notif");
-    setTimeout(() => setHalaman(null), 100);
-    setTab("beranda");
-    // Langsung ke keranjang
-    setTab("produk");
     setHalaman("keranjang");
   };
 
@@ -108,8 +94,8 @@ export default function App() {
   const handleCheckoutSelesai = (orderId, detail) => {
     const pesananBaru = {
       orderId,
-      tanggal:    new Date().toLocaleDateString("id-ID", {
-        day: "2-digit", month: "short", year: "numeric"
+      tanggal: new Date().toLocaleDateString("id-ID", {
+        day: "2-digit", month: "short", year: "numeric",
       }),
       status:     "diterima",
       items:      checkoutItems,
@@ -125,27 +111,30 @@ export default function App() {
     setHalaman("sukses");
   };
 
-  const handleLogin = (data) => {
-    setAkun(data);
-  };
-
-  const handleLogout = () => {
-    setAkun(null);
-  };
-
   // ── RENDER ─────────────────────────────────────────────────
 
-  // Intro cinematic
   if (!introSelesai) {
     return <Intro onSelesai={handleIntroSelesai} />;
   }
 
-  // Sub-halaman (tidak pakai BottomNav)
+  // ── SUB HALAMAN (tanpa BottomNav) ──
+  if (halaman === "keranjang") {
+    return (
+      <Keranjang
+        items={keranjang}
+        onHapus={handleHapusKeranjang}
+        onCheckout={handleCheckout}
+        onLanjutBelanja={() => setHalaman(null)}
+        onBack={() => setHalaman(null)}
+      />
+    );
+  }
+
   if (halaman === "custom" && produkAktif) {
     return (
       <CustomBuilder
         produk={produkAktif}
-        onBack={() => { setHalaman(null); }}
+        onBack={() => setHalaman(null)}
         onTambahKeranjang={handleTambahKeranjang}
       />
     );
@@ -173,55 +162,42 @@ export default function App() {
   if (halaman === "sukses") {
     return (
       <div style={{
+        fontFamily: "'Inter', system-ui, sans-serif",
         background: "#F2F2F0", minHeight: "100vh",
         display: "flex", flexDirection: "column",
         alignItems: "center", justifyContent: "center",
         padding: "32px", textAlign: "center",
       }}>
         <div style={{ fontSize: "72px", marginBottom: "16px" }}>🎉</div>
-        <div style={{
-          fontWeight: "900", fontSize: "24px",
-          color: "#0A0A0A", marginBottom: "8px",
-        }}>
+        <div style={{ fontWeight: "900", fontSize: "24px", color: "#0A0A0A", marginBottom: "8px" }}>
           Pesanan Terkirim!
         </div>
-        <div style={{
-          fontSize: "14px", color: "#6B7280",
-          lineHeight: 1.6, marginBottom: "32px",
-        }}>
+        <div style={{ fontSize: "14px", color: "#6B7280", lineHeight: 1.6, marginBottom: "32px" }}>
           WhatsApp admin sudah terbuka.<br />
           Jangan lupa lampirkan file desain kamu.
         </div>
-        <button
-          onClick={() => { setHalaman("pesanan"); }}
-          style={{
-            background: "#0A0A0A", color: "white", border: "none",
-            borderRadius: "50px", padding: "13px 36px",
-            fontSize: "13px", fontWeight: "900",
-            letterSpacing: "1.5px", cursor: "pointer",
-            marginBottom: "12px", width: "100%",
-          }}
-        >
+        <button onClick={() => setHalaman("pesanan")} style={{
+          background: "#0A0A0A", color: "white", border: "none",
+          borderRadius: "50px", padding: "13px 36px",
+          fontSize: "13px", fontWeight: "900",
+          letterSpacing: "1.5px", cursor: "pointer",
+          marginBottom: "12px", width: "100%",
+        }}>
           Lihat Pesanan Saya
         </button>
-        <button
-          onClick={() => { setHalaman(null); setTab("beranda"); }}
-          style={{
-            background: "none", border: "2px solid #E5E7EB",
-            borderRadius: "50px", padding: "13px 36px",
-            fontSize: "13px", fontWeight: "700",
-            cursor: "pointer", width: "100%", color: "#6B7280",
-          }}
-        >
+        <button onClick={() => { setHalaman(null); setTab("beranda"); }} style={{
+          background: "none", border: "2px solid #E5E7EB",
+          borderRadius: "50px", padding: "13px 36px",
+          fontSize: "13px", fontWeight: "700",
+          cursor: "pointer", width: "100%", color: "#6B7280",
+        }}>
           Kembali ke Beranda
         </button>
       </div>
     );
   }
 
-  // ── HALAMAN UTAMA (pakai BottomNav) ──────────────────────
-  const keranjangCount = keranjang.length;
-
+  // ── HALAMAN UTAMA (dengan BottomNav) ──
   return (
     <div style={{
       fontFamily: "'Inter', system-ui, sans-serif",
@@ -232,8 +208,6 @@ export default function App() {
       position:   "relative",
     }}>
 
-      {/* ── KONTEN PER TAB ── */}
-
       {tab === "beranda" && (
         <Beranda
           onCustom={handleCustom}
@@ -243,25 +217,13 @@ export default function App() {
         />
       )}
 
-      {tab === "produk" && halaman !== "keranjang" && (
+      {tab === "produk" && (
         <Produk
           onCustom={handleCustom}
           onWishlist={handleWishlist}
           wishlist={wishlist}
-          keranjangCount={keranjangCount}
+          keranjangCount={keranjang.length}
           onKeranjang={() => setHalaman("keranjang")}
-        />
-      )}
-
-      {(tab === "produk" && halaman === "keranjang") && (
-        <Keranjang
-          items={keranjang}
-          onHapus={handleHapusKeranjang}
-          onCheckout={handleCheckout}
-          onLanjutBelanja={() => {
-            setHalaman(null);
-            setTab("produk");
-          }}
         />
       )}
 
@@ -278,23 +240,18 @@ export default function App() {
       {tab === "akun" && (
         <Akun
           akun={akun}
-          onLogin={handleLogin}
-          onLogout={handleLogout}
+          onLogin={(data) => setAkun(data)}
+          onLogout={() => setAkun(null)}
           onLihatPesanan={() => setHalaman("pesanan")}
         />
       )}
 
-      {/* ── BOTTOM NAV ── */}
       <BottomNav
         aktif={tab}
-        onChange={(t) => {
-          setTab(t);
-          setHalaman(null);
-        }}
-        keranjangCount={keranjangCount}
+        onChange={(t) => { setTab(t); setHalaman(null); }}
+        keranjangCount={keranjang.length}
       />
 
     </div>
   );
 }
-
