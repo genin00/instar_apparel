@@ -31,14 +31,26 @@ const navItems = [
     ),
   },
   {
-    id:    "wishlist",
-    label: "Wishlist",
+    id:    "karya",
+    label: "Karya Instar",
     icon:  (active) => (
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-        <path d="M12 21C12 21 3 14 3 8.5C3 5.5 5.5 3 8.5 3C10 3 11.5 3.8 12 5C12.5 3.8 14 3 15.5 3C18.5 3 21 5.5 21 8.5C21 14 12 21 12 21Z"
+        <rect x="3" y="3" width="7" height="7" rx="1.5"
           fill={active ? "#0A0A0A" : "none"}
           stroke={active ? "#0A0A0A" : "#9CA3AF"}
-          strokeWidth="1.8" strokeLinejoin="round" />
+          strokeWidth="1.8" />
+        <rect x="14" y="3" width="7" height="7" rx="1.5"
+          fill={active ? "#0A0A0A" : "none"}
+          stroke={active ? "#0A0A0A" : "#9CA3AF"}
+          strokeWidth="1.8" />
+        <rect x="3" y="14" width="7" height="7" rx="1.5"
+          fill={active ? "#0A0A0A" : "none"}
+          stroke={active ? "#0A0A0A" : "#9CA3AF"}
+          strokeWidth="1.8" />
+        <rect x="14" y="14" width="7" height="7" rx="1.5"
+          fill={active ? "#0A0A0A" : "none"}
+          stroke={active ? "#0A0A0A" : "#9CA3AF"}
+          strokeWidth="1.8" />
       </svg>
     ),
   },

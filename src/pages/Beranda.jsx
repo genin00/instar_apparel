@@ -5,6 +5,7 @@
 import { useState } from "react";
 import Header from "../components/Header.jsx";
 import ProductCard from "../components/ProductCard.jsx";
+import KaryaInstar from "../components/KaryaInstar.jsx";
 import products from "../data/products.js";
 import config from "../config.js";
 
@@ -60,13 +61,6 @@ const caraKerja = [
   },
 ];
 
-// ── PORTFOLIO DATA ──────────────────────────────────────────
-const portfolio = [
-  { id: 1, label: "Kaos Kelas XII IPA 1",    warna: "#1E3A5F", emoji: "🏫" },
-  { id: 2, label: "Komunitas Motor Palopo",   warna: "#0A0A0A", emoji: "🏍️" },
-  { id: 3, label: "Kaos Event Kampus",        warna: "#C8392B", emoji: "🎓" },
-  { id: 4, label: "Kaos Perpisahan 2024",     warna: "#6B7040", emoji: "👋" },
-];
 
 // ── TESTIMONI DATA ──────────────────────────────────────────
 const testimoni = [
@@ -216,80 +210,9 @@ export default function Beranda({ onCustom, onWishlist, wishlist = [], onLihatSe
         </div>
       </div>
 
-      {/* ── PORTFOLIO ── */}
+      {/* ── KARYA INSTAR ── */}
       <div style={{ padding: "32px 20px 0" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "16px" }}>
-          <div>
-            <div style={{
-              fontSize:      "10px",
-              letterSpacing: "3px",
-              color:         "#9CA3AF",
-              marginBottom:  "4px",
-              textTransform: "uppercase",
-            }}>
-              Hasil Karya
-            </div>
-            <div style={{ fontWeight: 900, fontSize: "20px", color: "#0A0A0A" }}>
-              Karya Instar
-            </div>
-          </div>
-          <button
-            onClick={onLihatSemua}
-            style={{
-              background: "none",
-              border:     "none",
-              fontSize:   "12px",
-              fontWeight: "700",
-              color:      "#9CA3AF",
-              cursor:     "pointer",
-            }}
-          >
-            Lihat Semua →
-          </button>
-        </div>
-
-        {/* Grid portfolio */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
-          {portfolio.map((item) => (
-            <div
-              key={item.id}
-              style={{
-                background:     item.warna,
-                borderRadius:   "14px",
-                height:         "140px",
-                display:        "flex",
-                flexDirection:  "column",
-                alignItems:     "center",
-                justifyContent: "center",
-                gap:            "8px",
-                position:       "relative",
-                overflow:       "hidden",
-              }}
-            >
-              {/* Dekorasi background */}
-              <div style={{
-                position:     "absolute",
-                bottom:       "-20px",
-                right:        "-20px",
-                width:        "80px",
-                height:       "80px",
-                borderRadius: "50%",
-                background:   "rgba(255,255,255,0.05)",
-              }} />
-              <div style={{ fontSize: "32px" }}>{item.emoji}</div>
-              <div style={{
-                fontSize:   "11px",
-                fontWeight: "700",
-                color:      "rgba(255,255,255,0.85)",
-                textAlign:  "center",
-                padding:    "0 12px",
-                lineHeight: 1.3,
-              }}>
-                {item.label}
-              </div>
-            </div>
-          ))}
-        </div>
+        <KaryaInstar preview onLihatSemua={onLihatSemua} />
       </div>
 
       {/* ── PRODUK UNGGULAN ── */}

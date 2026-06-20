@@ -8,6 +8,74 @@ import { ukuranTersedia } from "../data/products.js";
 
 const rp = (n) => "Rp " + n.toLocaleString("id-ID");
 
+// ── Filter warna kaos (sama dengan CustomBuilder.jsx) ─────────
+function getShirtFilter(hex) {
+  if (!hex || hex === "#FFFFFF" || hex === "#ffffff") return "none";
+  const presets = {
+    "#1A1A1A": "brightness(0.15)",
+    "#9CA3AF": "brightness(0.65) saturate(0)",
+    "#1E3A5F": "brightness(0.25) sepia(1) hue-rotate(180deg) saturate(3)",
+    "#C8392B": "brightness(0.4) sepia(1) hue-rotate(320deg) saturate(5)",
+    "#6B2737": "brightness(0.25) sepia(1) hue-rotate(300deg) saturate(4)",
+    "#6B7040": "brightness(0.35) sepia(1) hue-rotate(60deg) saturate(2)",
+    "#F5F5DC": "brightness(0.97) sepia(0.15)",
+    "#3B82F6": "brightness(0.5) sepia(1) hue-rotate(190deg) saturate(5)",
+    "#10B981": "brightness(0.4) sepia(1) hue-rotate(120deg) saturate(5)",
+    "#F59E0B": "brightness(0.6) sepia(1) hue-rotate(10deg) saturate(6)",
+    "#EC4899": "brightness(0.5) sepia(1) hue-rotate(280deg) saturate(6)",
+    "#7C3AED": "brightness(0.35) sepia(1) hue-rotate(240deg) saturate(6)",
+    "#92400E": "brightness(0.3) sepia(1) hue-rotate(350deg) saturate(4)",
+  };
+  return presets[hex] || "brightness(0.5) sepia(1) saturate(3)";
+}
+
+// ── Path mockup foto kaos per produk (sama dengan CustomBuilder.jsx) ──
+const MOCKUP_MAP = {
+  "lengan-pendek":  { front: "/mockup-pendek.png",  back: "/mockup-pendek-belakang.png"  },
+  "lengan-panjang": { front: "/mockup-panjang.png", back: "/mockup-panjang-belakang.png" },
+  "rib":            { front: "/mockup-rib.png",     back: "/mockup-rib-belakang.png"     },
+};
+
+// ── Preview produk: mockup asli + warna + desain upload (kalau ada) ──
+function PreviewProduk({ item }) {
+  const hasDepan    = item.opsiDesain === "upload" && item.uploads?.depan;
+  const hasBelakang = item.opsiDesain === "upload" && item.uploads?.belakang;
+  const zona      = hasDepan ? "depan" : hasBelakang ? "belakang" : null;
+  const sisi      = zona === "belakang" ? "back" : "front";
+  const desainSrc = zona ? item.uploads[zona] : null;
+  // Posisi/skala asli yang diatur user di canvas builder (drag & zoom).
+  // Fallback dipakai hanya untuk item lama yang belum punya data posisiDesain.
+  const posisi    = (zona && item.posisiDesain?.[zona]) || { x: 50, y: 32, scale: 0.36 };
+  const mockupSrc = MOCKUP_MAP[item.produk?.id]?.[sisi] || "/mockup-pendek.png";
+
+  return (
+    <div style={{
+      width: "56px", borderRadius: "10px",
+      background: "#F8FAFC", border: "1px solid #E5E7EB",
+      overflow: "hidden", position: "relative", flexShrink: 0,
+      alignSelf: "flex-start",
+    }}>
+      {/* width 100% / height auto — sama persis dengan canvas builder,
+          supaya tidak ada letterbox dan koordinat % desain tetap pas */}
+      <img src={mockupSrc} alt={item.produk?.nama}
+        style={{
+          width: "100%", height: "auto", display: "block",
+          filter: getShirtFilter(item.warna),
+        }} />
+      {desainSrc && (
+        <img src={desainSrc} alt="desain"
+          style={{
+            position: "absolute",
+            left: `${posisi.x}%`, top: `${posisi.y}%`,
+            width: `${posisi.scale * 100}%`,
+            transform: "translate(-50%, -50%)",
+            filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.25))",
+          }} />
+      )}
+    </div>
+  );
+}
+
 export default function Keranjang({ items = [], onHapus, onCheckout, onLanjutBelanja, onBack }) {
   const [dipilih, setDipilih] = useState([]);
 
@@ -131,13 +199,8 @@ export default function Keranjang({ items = [], onHapus, onCheckout, onLanjutBel
               </div>
             </button>
 
-            {/* Warna preview */}
-            <div style={{
-              width: "56px", height: "64px", borderRadius: "10px",
-              background: item.warna, border: "1px solid #E5E7EB",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: "22px", flexShrink: 0,
-            }}>👕</div>
+            {/* Preview produk: mockup + warna + desain */}
+            <PreviewProduk item={item} />
 
             {/* Detail */}
             <div style={{ flex: 1 }}>
