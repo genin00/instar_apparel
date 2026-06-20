@@ -4,6 +4,8 @@
 
 import { useState, useEffect } from "react";
 import BottomNav     from "./components/BottomNav.jsx";
+import Header        from "./components/Header.jsx";
+import KaryaInstar   from "./components/KaryaInstar.jsx";
 import Intro         from "./pages/Intro.jsx";
 import Beranda       from "./pages/Beranda.jsx";
 import Produk        from "./pages/Produk.jsx";
@@ -44,6 +46,7 @@ export default function App() {
   const [tab,           setTab]           = useState("beranda");
   const [halaman,       setHalaman]       = useState(null);
   const [produkAktif,   setProdukAktif]   = useState(null);
+  const [desainAwalAktif, setDesainAwalAktif] = useState(null);
   const [keranjang,     setKeranjang]     = useState(() => load("instar_keranjang", []));
   const [wishlist,      setWishlist]      = useState(() => load("instar_wishlist", []));
   const [pesananList,   setPesananList]   = useState(() => load("instar_pesanan", []));
@@ -62,6 +65,13 @@ export default function App() {
 
   const handleCustom = (produk) => {
     setProdukAktif(produk);
+    setDesainAwalAktif(null);
+    setHalaman("custom");
+  };
+
+  const handleBuatSepertiIni = (karyaItem, produkDasar) => {
+    setProdukAktif(produkDasar);
+    setDesainAwalAktif(karyaItem);
     setHalaman("custom");
   };
 
@@ -134,6 +144,7 @@ export default function App() {
     return (
       <CustomBuilder
         produk={produkAktif}
+        desainAwal={desainAwalAktif}
         onBack={() => setHalaman(null)}
         onTambahKeranjang={handleTambahKeranjang}
       />
@@ -214,6 +225,7 @@ export default function App() {
           onWishlist={handleWishlist}
           wishlist={wishlist}
           onLihatSemua={() => setTab("produk")}
+          onBuatSepertiIni={handleBuatSepertiIni}
         />
       )}
 
@@ -227,12 +239,13 @@ export default function App() {
         />
       )}
 
-      {tab === "wishlist" && (
-        <Wishlist
-          items={wishlist}
-          onHapus={(id) => setWishlist(prev => prev.filter(w => w.id !== id))}
-          onCustom={handleCustom}
-        />
+      {tab === "karya" && (
+        <div style={{ background: "#F2F2F0", minHeight: "100vh", paddingBottom: "80px" }}>
+          <Header halaman="karya" judul="Karya Instar" />
+          <div style={{ padding: "20px" }}>
+            <KaryaInstar onBuatSepertiIni={handleBuatSepertiIni} />
+          </div>
+        </div>
       )}
 
       {tab === "support" && <Support />}

@@ -452,13 +452,15 @@ function ColorPicker({ warna, setWarna }) {
 }
 
 // ── MAIN COMPONENT ───────────────────────────────────────────
-export default function CustomBuilder({ produk, onBack, onTambahKeranjang }) {
+export default function CustomBuilder({ produk, onBack, onTambahKeranjang, desainAwal }) {
   const [step,         setStep]         = useState(0);
   const [warna,        setWarna]        = useState("#FFFFFF");
-  const [opsiDesain,   setOpsiDesain]   = useState(null);
+  const [opsiDesain,   setOpsiDesain]   = useState(desainAwal ? "upload" : null);
   const [side,         setSide]         = useState("front");
   const [activeZona,   setActiveZona]   = useState("depan");
-  const [uploads,      setUploads]      = useState({});
+  const [uploads,      setUploads]      = useState(() =>
+    desainAwal ? { depan: desainAwal.gambarDesain } : {}
+  );
   const [posisiDesain, setPosisiDesain] = useState({});
   const [catatan,      setCatatan]      = useState({});
   const [catatanInput, setCatatanInput] = useState("");
@@ -699,6 +701,13 @@ export default function CustomBuilder({ produk, onBack, onTambahKeranjang }) {
                       border:"2px solid #E5E7EB", padding:"10px", fontSize:"13px",
                       resize:"none", outline:"none", boxSizing:"border-box", fontFamily:"inherit" }}/>
                 </div>
+
+                {desainAwal && (
+                  <div style={{ background:"#FEF2F2", borderRadius:"10px",
+                    padding:"10px 12px", fontSize:"12px", color:"#C8392B", fontWeight:"600", marginBottom:"10px" }}>
+                    🎨 Desain dari Karya Instar: "{desainAwal.label}" sudah terpasang. Kamu masih bisa atur posisi atau ganti desain.
+                  </div>
+                )}
 
                 {uploadCount > 0 && (
                   <div style={{ background:"#ECFDF5", borderRadius:"10px",
