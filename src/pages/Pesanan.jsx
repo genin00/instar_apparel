@@ -6,6 +6,7 @@
 import { useState } from "react";
 import Header from "../components/Header.jsx";
 import config from "../config.js";
+import { sudahReview } from "../services/reviewService.js";
 
 const rp = (n) => "Rp " + n.toLocaleString("id-ID");
 
@@ -61,7 +62,7 @@ function StatusBadge({ status }) {
   );
 }
 
-function PesananCard({ pesanan, onCekStatus }) {
+function PesananCard({ pesanan, onBeriUlasan }) {
   const [expand, setExpand] = useState(false);
   const statusIdx = STATUS_FLOW.findIndex(s => s.id === pesanan.status);
 
@@ -223,7 +224,7 @@ function PesananCard({ pesanan, onCekStatus }) {
   );
 }
 
-export default function Pesanan({ pesananList = [], filterStatus = null, onBack }) {
+export default function Pesanan({ pesananList = [], filterStatus = null, onBack, onBeriUlasan }) {
   const [tab, setTab] = useState("aktif");
 
   const aktif   = pesananList.filter(p => p.status !== "selesai");
@@ -291,7 +292,7 @@ export default function Pesanan({ pesananList = [], filterStatus = null, onBack 
             <PesananCard
               key={p.orderId}
               pesanan={p}
-              onCekStatus={handleCekStatus}
+              onBeriUlasan={onBeriUlasan}
             />
           ))
         )}

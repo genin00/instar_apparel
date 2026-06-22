@@ -17,6 +17,7 @@ import Wishlist      from "./pages/Wishlist.jsx";
 import config from "./config.js";
 import { saveOrder, getOrders } from "./services/orderService.js";
 import Support       from "./pages/Support.jsx";
+import TulisReview   from "./pages/TulisReview.jsx";
 import Akun          from "./pages/Akun.jsx";
 
 const load = (key, fallback) => {
@@ -53,7 +54,8 @@ export default function App() {
   const [wishlist,      setWishlist]      = useState(() => load("instar_wishlist", []));
   const [pesananList,   setPesananList]   = useState(() => { try { const v = localStorage.getItem("instar_pesanan"); return v ? JSON.parse(v) : []; } catch { return []; } });
   const [akun,          setAkun]          = useState(() => load("instar_akun", null));
-  const [checkoutItems, setCheckoutItems] = useState([]);
+  const [checkoutItems,  setCheckoutItems]  = useState([]);
+  const [reviewTarget,   setReviewTarget]   = useState(null);
   const [pesananFilter,  setPesananFilter]  = useState(null);
 
   useEffect(() => { save("instar_keranjang", keranjang);   }, [keranjang]);
@@ -161,6 +163,18 @@ export default function App() {
         items={checkoutItems}
         onBack={() => setHalaman("keranjang")}
         onSelesai={handleCheckoutSelesai}
+      />
+    );
+  }
+
+  if (halaman === "tulis-review" && reviewTarget) {
+    return (
+      <TulisReview
+        pesanan={reviewTarget.pesanan}
+        item={reviewTarget.item}
+        akun={akun}
+        onBack={() => setHalaman("pesanan")}
+        onSelesai={() => setHalaman("pesanan")}
       />
     );
   }

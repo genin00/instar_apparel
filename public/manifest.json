@@ -1,0 +1,58 @@
+{
+  "name": "Instar Apparel",
+  "short_name": "Instar",
+  "description": "Aplikasi pemesanan kaos custom Instar Apparel — desain sendiri, cetak berkualitas.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F2F2F0",
+  "theme_color": "#0A0A0A",
+  "lang": "id",
+  "icons": [
+    {
+      "src": "/icons/icon-48.png",
+      "sizes": "48x48",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-72.png",
+      "sizes": "72x72",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-96.png",
+      "sizes": "96x96",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-144.png",
+      "sizes": "144x144",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": [
+    "shopping",
+    "lifestyle"
+  ],
+  "id": "com.instarapparel.app",
+  "scope": "/",
+  "dir": "ltr",
+  "screenshots": [
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "form_factor": "narrow",
+      "label": "Halaman Utama Instar Apparel"
+    }
+  ]
+}
