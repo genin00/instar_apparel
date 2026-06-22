@@ -55,22 +55,17 @@ const navItems = [
     ),
   },
   {
-    id:    "support",
-    label: "Support",
+    id:    "notifikasi",
+    label: "Notifikasi",
     icon:  (active) => (
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-        <circle cx="12" cy="12" r="9"
+        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"
           fill={active ? "#0A0A0A" : "none"}
           stroke={active ? "#0A0A0A" : "#9CA3AF"}
-          strokeWidth="1.8" />
-        <path d="M12 8C10.9 8 10 8.9 10 10"
-          stroke={active ? "#FFFFFF" : "#9CA3AF"}
-          strokeWidth="1.8" strokeLinecap="round" />
-        <circle cx="12" cy="16" r="0.8"
-          fill={active ? "#FFFFFF" : "#9CA3AF"} />
-        <path d="M12 10V14"
-          stroke={active ? "#FFFFFF" : "#9CA3AF"}
-          strokeWidth="1.8" strokeLinecap="round" />
+          strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M13.73 21a2 2 0 0 1-3.46 0"
+          stroke={active ? "#0A0A0A" : "#9CA3AF"}
+          strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     ),
   },

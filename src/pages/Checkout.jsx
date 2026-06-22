@@ -9,9 +9,29 @@ import { ukuranTersedia } from "../data/products.js";
 
 const rp = (n) => "Rp " + n.toLocaleString("id-ID");
 
-export default function Checkout({ items = [], onBack, onSelesai }) {
-  const [nama,       setNama]       = useState("");
-  const [noWA,       setNoWA]       = useState("");
+function getShirtFilter(hex) {
+  if (!hex || hex === "#FFFFFF" || hex === "#ffffff") return "none";
+  const presets = {
+    "#1A1A1A": "brightness(0.15)",
+    "#9CA3AF": "brightness(0.65) saturate(0)",
+    "#1E3A5F": "brightness(0.25) sepia(1) hue-rotate(180deg) saturate(3)",
+    "#C8392B": "brightness(0.4) sepia(1) hue-rotate(320deg) saturate(5)",
+    "#6B2737": "brightness(0.25) sepia(1) hue-rotate(300deg) saturate(4)",
+    "#6B7040": "brightness(0.35) sepia(1) hue-rotate(60deg) saturate(2)",
+    "#F5F5DC": "brightness(0.97) sepia(0.15)",
+    "#3B82F6": "brightness(0.5) sepia(1) hue-rotate(190deg) saturate(5)",
+    "#10B981": "brightness(0.4) sepia(1) hue-rotate(120deg) saturate(5)",
+    "#F59E0B": "brightness(0.6) sepia(1) hue-rotate(10deg) saturate(6)",
+    "#EC4899": "brightness(0.5) sepia(1) hue-rotate(280deg) saturate(6)",
+    "#7C3AED": "brightness(0.35) sepia(1) hue-rotate(240deg) saturate(6)",
+    "#92400E": "brightness(0.3) sepia(1) hue-rotate(350deg) saturate(4)",
+  };
+  return presets[hex] || "brightness(0.5) sepia(1) saturate(3)";
+}
+
+export default function Checkout({ items = [], akun, onBack, onSelesai }) {
+  const [nama,       setNama]       = useState(akun?.nama || "");
+  const [noWA,       setNoWA]       = useState(akun?.noWA || "");
   const [alamat,     setAlamat]     = useState("");
   const [pengiriman, setPengiriman] = useState("ambil"); // "ambil" | "kirim"
   const [bayar,      setBayar]      = useState(null);
@@ -85,8 +105,6 @@ export default function Checkout({ items = [], onBack, onSelesai }) {
   const handleOrder = () => {
     setLoading(true);
     setTimeout(() => {
-      const msg = buildWAMessage();
-      window.open(`https://wa.me/${config.whatsapp.bisnis}?text=${msg}`, "_blank");
       setLoading(false);
       onSelesai(orderId, { nama, noWA, bayar, pengiriman, alamat });
     }, 600);
@@ -123,12 +141,15 @@ export default function Checkout({ items = [], onBack, onSelesai }) {
               marginBottom: idx < items.length - 1 ? "12px" : "0",
               borderBottom: idx < items.length - 1 ? "1px solid #ffffff10" : "none",
             }}>
-              <div style={{
-                width: "44px", height: "50px", borderRadius: "8px",
-                background: item.warna, border: "1px solid #ffffff15",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: "18px", flexShrink: 0,
-              }}>👕</div>
+              <div style={{ width:"52px", flexShrink:0, background:"#ffffff15",
+                borderRadius:"10px", padding:"4px", border:"1px solid #ffffff15" }}>
+                <img
+                  src={item.produk?.id === "lengan-panjang" ? "/mockup-panjang.png" : item.produk?.id === "rib" ? "/mockup-rib.png" : "/mockup-pendek.png"}
+                  alt="kaos"
+                  style={{ width:"100%", display:"block",
+                    filter: getShirtFilter(item.warna) }}
+                />
+              </div>
               <div style={{ flex: 1 }}>
                 <div style={{ fontWeight: "700", fontSize: "13px" }}>{item.produk.nama}</div>
                 <div style={{ fontSize: "11px", color: "#9CA3AF" }}>
@@ -269,7 +290,7 @@ export default function Checkout({ items = [], onBack, onSelesai }) {
           color: "#854D0E", border: "1px solid #FDE047",
           lineHeight: 1.5, marginBottom: "12px",
         }}>
-          ⚠️ Setelah menekan tombol pesan, WhatsApp admin akan terbuka. Lampirkan file desain kamu di sana.
+          📋 Pesanan kamu akan langsung masuk ke sistem dan bisa dicek di halaman Pesanan Saya.
         </div>
 
       </div>
@@ -294,7 +315,7 @@ export default function Checkout({ items = [], onBack, onSelesai }) {
           disabled={!canOrder || loading}
           style={{
             width: "100%", padding: "14px", borderRadius: "12px", border: "none",
-            background: canOrder ? "#25D366" : "#E5E7EB",
+            background: canOrder ? "#C8392B" : "#E5E7EB",
             color: canOrder ? "white" : "#9CA3AF",
             fontWeight: "900", fontSize: "15px",
             cursor: canOrder ? "pointer" : "not-allowed",
@@ -303,7 +324,7 @@ export default function Checkout({ items = [], onBack, onSelesai }) {
             opacity: loading ? 0.7 : 1,
           }}
         >
-          {loading ? "Memproses..." : "💬 Pesan via WhatsApp"}
+          {loading ? "Memproses..." : "🛒 Buat Pesanan"}
         </button>
       </div>
 

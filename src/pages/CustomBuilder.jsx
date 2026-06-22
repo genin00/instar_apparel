@@ -726,57 +726,112 @@ export default function CustomBuilder({ produk, onBack, onTambahKeranjang, desai
                     background:"none", border:"none", cursor:"pointer", fontSize:"20px", padding:0, color:"#9CA3AF" }}>←</button>
                   <div style={{ fontWeight:900, fontSize:"17px" }}>Konsultasi Desainer</div>
                 </div>
-                <div style={S.card}>
-                  <div style={S.label}>Kategori Desain</div>
-                  <div style={{ display:"flex", flexDirection:"column", gap:"8px", marginBottom:"16px" }}>
+                {/* Banner */}
+                <div style={{ background:"linear-gradient(135deg,#0A0A0A,#1a1a2e)", borderRadius:"14px",
+                  padding:"14px 16px", marginBottom:"14px", display:"flex", gap:"10px", alignItems:"center" }}>
+                  <div style={{ fontSize:"28px" }}>🎨</div>
+                  <div>
+                    <div style={{ color:"white", fontWeight:"800", fontSize:"13px", marginBottom:"3px" }}>Tim Desainer Siap Bantu</div>
+                    <div style={{ color:"#9CA3AF", fontSize:"11px", lineHeight:1.5 }}>Ceritakan idemu → Desainer buatkan → Kamu setujui → Produksi</div>
+                  </div>
+                </div>
+
+                {/* Step 1: Kategori */}
+                <div style={{ background:"white", borderRadius:"14px", marginBottom:"12px", overflow:"hidden" }}>
+                  <div style={{ padding:"14px 16px 10px", borderBottom:"1px solid #F3F4F6", display:"flex", alignItems:"center", gap:"8px" }}>
+                    <div style={{ width:"22px", height:"22px", borderRadius:"50%", background:briefKat?"#10B981":"#C8392B",
+                      color:"white", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"11px", fontWeight:"900", flexShrink:0 }}>
+                      {briefKat ? "✓" : "1"}
+                    </div>
+                    <div style={{ fontWeight:"800", fontSize:"14px" }}>Pilih Kategori</div>
+                  </div>
+                  <div style={{ padding:"12px", display:"grid", gridTemplateColumns:"1fr 1fr", gap:"8px" }}>
                     {kategoriTemplate.map(k => (
                       <button key={k.id} onClick={() => setBriefKat(k.id)} style={{
-                        padding:"12px 14px", borderRadius:"10px", border:"2px solid",
-                        borderColor:briefKat===k.id?"#C8392B":"#E5E7EB",
-                        background:briefKat===k.id?"#FEF2F2":"white",
-                        cursor:"pointer", textAlign:"left",
-                        display:"flex", alignItems:"center", gap:"10px" }}>
-                        <span style={{ fontSize:"20px" }}>{k.icon}</span>
-                        <span style={{ fontWeight:"700", fontSize:"13px",
-                          color:briefKat===k.id?"#C8392B":"#0A0A0A" }}>{k.label}</span>
-                        {briefKat===k.id && <span style={{ marginLeft:"auto", color:"#C8392B", fontWeight:"900" }}>✓</span>}
+                        padding:"14px 10px", borderRadius:"12px", border:"2px solid",
+                        borderColor:briefKat===k.id?"#C8392B":"#F3F4F6",
+                        background:briefKat===k.id?"#FEF2F2":"#FAFAFA",
+                        cursor:"pointer", textAlign:"center",
+                        display:"flex", flexDirection:"column", alignItems:"center", gap:"6px",
+                        boxShadow:briefKat===k.id?"0 0 0 3px rgba(200,57,43,0.1)":"none" }}>
+                        <div style={{ width:"32px", height:"32px", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                          {k.id === "kelas" && <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#0A0A0A" strokeWidth="1.8" strokeLinejoin="round"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#0A0A0A" strokeWidth="1.8" strokeLinejoin="round"/></svg>}
+                          {k.id === "event" && <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" stroke="#0A0A0A" strokeWidth="1.8"/><path d="M16 2v4M8 2v4M3 10h18" stroke="#0A0A0A" strokeWidth="1.8" strokeLinecap="round"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01" stroke="#0A0A0A" strokeWidth="2" strokeLinecap="round"/></svg>}
+                          {k.id === "perpisahan" && <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="#0A0A0A" strokeWidth="1.8" strokeLinejoin="round"/></svg>}
+                          {k.id === "komunitas" && <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><circle cx="9" cy="7" r="4" stroke="#0A0A0A" strokeWidth="1.8"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2" stroke="#0A0A0A" strokeWidth="1.8" strokeLinecap="round"/><path d="M16 3.13a4 4 0 0 1 0 7.75M21 21v-2a4 4 0 0 0-3-3.87" stroke="#0A0A0A" strokeWidth="1.8" strokeLinecap="round"/></svg>}
+                          {k.id === "organisasi" && <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="#0A0A0A" strokeWidth="1.8" strokeLinejoin="round"/></svg>}
+                        </div>
+                        <span style={{ fontWeight:"700", fontSize:"11px", lineHeight:1.3,
+                          color:briefKat===k.id?"#C8392B":"#374151" }}>{k.label}</span>
                       </button>
                     ))}
                   </div>
-                  {briefKat && (
-                    <>
-                      <div style={S.label}>Ceritakan Idemu</div>
-                      {[{key:"depan",label:"Desain Depan"},{key:"belakang",label:"Desain Belakang"}].map(f => (
-                        <div key={f.key} style={{ marginBottom:"10px" }}>
-                          <div style={{ fontSize:"12px", fontWeight:"600", color:"#6B7280", marginBottom:"5px" }}>{f.label}</div>
+                </div>
+
+                {/* Step 2: Form brief */}
+                {briefKat && (
+                  <div style={{ background:"white", borderRadius:"14px", marginBottom:"12px", overflow:"hidden" }}>
+                    <div style={{ padding:"14px 16px 10px", borderBottom:"1px solid #F3F4F6", display:"flex", alignItems:"center", gap:"8px" }}>
+                      <div style={{ width:"22px", height:"22px", borderRadius:"50%", background:"#C8392B",
+                        color:"white", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"11px", fontWeight:"900", flexShrink:0 }}>2</div>
+                      <div style={{ fontWeight:"800", fontSize:"14px" }}>Ceritakan Idemu</div>
+                    </div>
+                    <div style={{ padding:"14px 16px" }}>
+                      {[
+                        {key:"depan", label:"Desain Depan", required:true, placeholder:"Contoh: logo sekolah di tengah, tulisan nama kelas, warna navy..."},
+                        {key:"belakang", label:"Desain Belakang (opsional)", required:false, placeholder:"Contoh: daftar nama anggota, quote, tahun angkatan..."},
+                      ].map(f => (
+                        <div key={f.key} style={{ marginBottom:"14px" }}>
+                          <div style={{ display:"flex", alignItems:"center", gap:"6px", marginBottom:"6px" }}>
+                            <div style={{ fontSize:"12px", fontWeight:"700", color:"#374151" }}>{f.label}</div>
+                            {f.required && <div style={{ fontSize:"9px", background:"#FEF2F2", color:"#C8392B",
+                              padding:"1px 6px", borderRadius:"4px", fontWeight:"700" }}>Wajib</div>}
+                          </div>
                           <textarea value={briefTeks[f.key]}
                             onChange={e => setBriefTeks(prev => ({...prev,[f.key]:e.target.value}))}
-                            placeholder="Contoh: nama kelas, tahun angkatan, tema warna..."
-                            style={{ width:"100%", minHeight:"60px", borderRadius:"8px",
-                              border:"2px solid #E5E7EB", padding:"10px", fontSize:"13px",
-                              resize:"none", outline:"none", boxSizing:"border-box", fontFamily:"inherit" }}/>
+                            placeholder={f.placeholder}
+                            style={{ width:"100%", minHeight:"80px", borderRadius:"10px",
+                              border:"2px solid", borderColor:briefTeks[f.key]?"#10B981":"#E5E7EB",
+                              padding:"10px 12px", fontSize:"13px", resize:"none", outline:"none",
+                              boxSizing:"border-box", fontFamily:"inherit", lineHeight:1.5 }}/>
+                          {briefTeks[f.key] && <div style={{ fontSize:"10px", color:"#10B981", fontWeight:"600", marginTop:"3px" }}>✓ Tersimpan</div>}
                         </div>
                       ))}
-                      <div style={{ background:"#FEF9C3", borderRadius:"10px", padding:"12px",
-                        fontSize:"12px", color:"#854D0E", border:"1px solid #FDE047", lineHeight:1.5 }}>
-                        💡 Tim desainer akan menghubungi kamu via WhatsApp dan mengirimkan <strong>Kode Desain</strong> setelah fix.
+                      <div style={{ background:"#F0FDF4", borderRadius:"10px", padding:"12px",
+                        fontSize:"12px", color:"#065F46", border:"1px solid #BBF7D0", lineHeight:1.6 }}>
+                        <div style={{ fontWeight:"700", marginBottom:"4px" }}>📋 Proses Selanjutnya:</div>
+                        <div>1. Admin WhatsApp konfirmasi pesanan</div>
+                        <div>2. Desainer kirim draft desain (1-2 hari)</div>
+                        <div>3. Kamu setujui → produksi dimulai</div>
                       </div>
-                    </>
-                  )}
-                </div>
-                <div style={S.card}>
-                  <div style={S.label}>Sudah Punya Kode Desain?</div>
-                  <div style={{ fontSize:"12px", color:"#9CA3AF", marginBottom:"10px" }}>
-                    Masukkan kode yang dikirim desainer via WhatsApp
+                    </div>
                   </div>
-                  <input value={kodeDesain} onChange={e => setKodeDesain(e.target.value.toUpperCase())}
-                    placeholder="INSTAR-XXXX"
-                    style={{ width:"100%", borderRadius:"8px", border:"2px solid #E5E7EB",
-                      padding:"10px 12px", fontSize:"14px", fontWeight:"700",
-                      outline:"none", boxSizing:"border-box",
-                      letterSpacing:"2px", fontFamily:"monospace",
-                      color:kodeDesain?"#10B981":"#374151" }}/>
-                  {kodeDesain && <div style={{ marginTop:"8px", fontSize:"12px", color:"#10B981", fontWeight:"700" }}>✅ Kode desain tersimpan</div>}
+                )}
+
+                {/* Step 3: Kode desain */}
+                <div style={{ background:"white", borderRadius:"14px", marginBottom:"12px", overflow:"hidden" }}>
+                  <div style={{ padding:"14px 16px 10px", borderBottom:"1px solid #F3F4F6", display:"flex", alignItems:"center", gap:"8px" }}>
+                    <div style={{ width:"22px", height:"22px", borderRadius:"50%",
+                      background:kodeDesain?"#10B981":"#E5E7EB", color:kodeDesain?"white":"#9CA3AF",
+                      display:"flex", alignItems:"center", justifyContent:"center", fontSize:"11px", fontWeight:"900", flexShrink:0 }}>
+                      {kodeDesain?"✓":"3"}
+                    </div>
+                    <div>
+                      <div style={{ fontWeight:"800", fontSize:"14px" }}>Sudah Punya Kode Desain?</div>
+                      <div style={{ fontSize:"10px", color:"#9CA3AF" }}>Opsional — isi jika sudah dapat dari desainer</div>
+                    </div>
+                  </div>
+                  <div style={{ padding:"14px 16px" }}>
+                    <input value={kodeDesain} onChange={e => setKodeDesain(e.target.value.toUpperCase())}
+                      placeholder="INSTAR-XXXX"
+                      style={{ width:"100%", borderRadius:"10px", border:"2px solid",
+                        borderColor:kodeDesain?"#10B981":"#E5E7EB",
+                        padding:"12px 14px", fontSize:"15px", fontWeight:"800",
+                        outline:"none", boxSizing:"border-box",
+                        letterSpacing:"3px", fontFamily:"monospace",
+                        color:kodeDesain?"#10B981":"#374151", textAlign:"center" }}/>
+                    {kodeDesain && <div style={{ marginTop:"8px", fontSize:"12px", color:"#10B981", fontWeight:"700", textAlign:"center" }}>✅ Kode desain tersimpan</div>}
+                  </div>
                 </div>
               </div>
             )}

@@ -14,6 +14,8 @@ import Keranjang     from "./pages/Keranjang.jsx";
 import Checkout      from "./pages/Checkout.jsx";
 import Pesanan       from "./pages/Pesanan.jsx";
 import Wishlist      from "./pages/Wishlist.jsx";
+import config from "./config.js";
+import { saveOrder, getOrders } from "./services/orderService.js";
 import Support       from "./pages/Support.jsx";
 import Akun          from "./pages/Akun.jsx";
 
@@ -49,13 +51,13 @@ export default function App() {
   const [desainAwalAktif, setDesainAwalAktif] = useState(null);
   const [keranjang,     setKeranjang]     = useState(() => load("instar_keranjang", []));
   const [wishlist,      setWishlist]      = useState(() => load("instar_wishlist", []));
-  const [pesananList,   setPesananList]   = useState(() => load("instar_pesanan", []));
+  const [pesananList,   setPesananList]   = useState(() => { try { const v = localStorage.getItem("instar_pesanan"); return v ? JSON.parse(v) : []; } catch { return []; } });
   const [akun,          setAkun]          = useState(() => load("instar_akun", null));
   const [checkoutItems, setCheckoutItems] = useState([]);
+  const [pesananFilter,  setPesananFilter]  = useState(null);
 
   useEffect(() => { save("instar_keranjang", keranjang);   }, [keranjang]);
   useEffect(() => { save("instar_wishlist",  wishlist);    }, [wishlist]);
-  useEffect(() => { save("instar_pesanan",   pesananList); }, [pesananList]);
   useEffect(() => { save("instar_akun",      akun);        }, [akun]);
 
   const handleIntroSelesai = () => {
@@ -101,24 +103,25 @@ export default function App() {
     setHalaman("checkout");
   };
 
-  const handleCheckoutSelesai = (orderId, detail) => {
+  const handleCheckoutSelesai = async (orderId, detail) => {
     const pesananBaru = {
       orderId,
       tanggal: new Date().toLocaleDateString("id-ID", {
         day: "2-digit", month: "short", year: "numeric",
       }),
-      status:     "diterima",
+      status: checkoutItems.every(i => i.opsiDesain === "brief") ? "desain" : "diterima",
       items:      checkoutItems,
       totalQty:   checkoutItems.reduce((a, i) => a + i.totalQty, 0),
       totalHarga: checkoutItems.reduce((a, i) => a + i.totalHarga, 0),
       ...detail,
     };
+    await saveOrder(pesananBaru);
     setPesananList(prev => [pesananBaru, ...prev]);
     setKeranjang(prev =>
       prev.filter(i => !checkoutItems.find(ci => ci.id === i.id))
     );
     setCheckoutItems([]);
-    setHalaman("sukses");
+    setHalaman("pesanan");
   };
 
   // ── RENDER ─────────────────────────────────────────────────
@@ -154,6 +157,7 @@ export default function App() {
   if (halaman === "checkout") {
     return (
       <Checkout
+        akun={akun}
         items={checkoutItems}
         onBack={() => setHalaman("keranjang")}
         onSelesai={handleCheckoutSelesai}
@@ -165,12 +169,32 @@ export default function App() {
     return (
       <Pesanan
         pesananList={pesananList}
-        onBack={() => setHalaman(null)}
+        filterStatus={pesananFilter}
+        onBack={() => { setPesananFilter(null); setHalaman(null); }}
       />
     );
   }
 
   if (halaman === "sukses") {
+    const adaBrief = checkoutItems.length > 0
+      ? false
+      : pesananList[0]?.items?.some(i => i.opsiDesain === "brief");
+    // Cek dari pesanan terbaru
+    const pesananTerbaru = pesananList[0];
+    const isBrief = pesananTerbaru?.items?.some(i => i.opsiDesain === "brief");
+
+    const bukaWA = () => {
+      const orderId = pesananTerbaru?.orderId || "";
+      const msg = encodeURIComponent(
+        `Halo Instar Apparel! 👋
+
+Saya baru saja melakukan pesanan dengan ID: *${orderId}*
+
+Saya belum punya desain dan ingin konsultasi dengan tim desainer. Mohon bantuannya ya! 🙏`
+      );
+      window.open(`https://wa.me/${config.whatsapp.desainer}?text=${msg}`, "_blank");
+    };
+
     return (
       <div style={{
         fontFamily: "'Inter', system-ui, sans-serif",
@@ -179,28 +203,79 @@ export default function App() {
         alignItems: "center", justifyContent: "center",
         padding: "32px", textAlign: "center",
       }}>
-        <div style={{ fontSize: "72px", marginBottom: "16px" }}>🎉</div>
+        <div style={{ fontSize: "72px", marginBottom: "16px" }}>
+          {isBrief ? "🎨" : "🎉"}
+        </div>
         <div style={{ fontWeight: "900", fontSize: "24px", color: "#0A0A0A", marginBottom: "8px" }}>
-          Pesanan Terkirim!
+          {isBrief ? "Pesanan Diterima!" : "Pesanan Terkirim!"}
         </div>
-        <div style={{ fontSize: "14px", color: "#6B7280", lineHeight: 1.6, marginBottom: "32px" }}>
-          WhatsApp admin sudah terbuka.<br />
-          Jangan lupa lampirkan file desain kamu.
+        <div style={{ fontSize: "14px", color: "#6B7280", lineHeight: 1.6, marginBottom: "24px" }}>
+          {isBrief ? (
+            <>
+              Pesananmu sudah masuk ke sistem kami.<br/>
+              Tim desainer akan segera menghubungimu<br/>
+              via WhatsApp untuk diskusi desain.
+            </>
+          ) : (
+            <>
+              WhatsApp admin sudah terbuka.<br/>
+              Jangan lupa lampirkan file desain kamu.
+            </>
+          )}
         </div>
-        <button onClick={() => setHalaman("pesanan")} style={{
-          background: "#0A0A0A", color: "white", border: "none",
-          borderRadius: "50px", padding: "13px 36px",
-          fontSize: "13px", fontWeight: "900",
-          letterSpacing: "1.5px", cursor: "pointer",
-          marginBottom: "12px", width: "100%",
-        }}>
-          Lihat Pesanan Saya
-        </button>
+
+        {/* Info order ID */}
+        {pesananTerbaru?.orderId && (
+          <div style={{
+            background: "white", borderRadius: "14px", padding: "14px 20px",
+            marginBottom: "24px", width: "100%",
+            border: "1px solid #E5E7EB",
+          }}>
+            <div style={{ fontSize: "11px", color: "#9CA3AF", marginBottom: "4px" }}>ID Pesanan</div>
+            <div style={{ fontWeight: "900", fontSize: "18px", letterSpacing: "2px", color: "#0A0A0A" }}>
+              {pesananTerbaru.orderId}
+            </div>
+            <div style={{ fontSize: "11px", color: "#9CA3AF", marginTop: "4px" }}>
+              Simpan ID ini untuk cek status pesanan
+            </div>
+          </div>
+        )}
+
+        {isBrief ? (
+          <>
+            <button onClick={bukaWA} style={{
+              background: "#25D366", color: "white", border: "none",
+              borderRadius: "14px", padding: "14px 36px",
+              fontSize: "14px", fontWeight: "900",
+              cursor: "pointer", marginBottom: "12px", width: "100%",
+              display: "flex", alignItems: "center", justifyContent: "center", gap: "8px",
+            }}>
+              💬 Chat Desainer via WhatsApp
+            </button>
+            <button onClick={() => setHalaman("pesanan")} style={{
+              background: "white", border: "2px solid #E5E7EB",
+              borderRadius: "14px", padding: "13px 36px",
+              fontSize: "13px", fontWeight: "700",
+              cursor: "pointer", marginBottom: "12px", width: "100%", color: "#374151",
+            }}>
+              Lihat Pesanan Saya
+            </button>
+          </>
+        ) : (
+          <button onClick={() => setHalaman("pesanan")} style={{
+            background: "#0A0A0A", color: "white", border: "none",
+            borderRadius: "14px", padding: "13px 36px",
+            fontSize: "13px", fontWeight: "900",
+            cursor: "pointer", marginBottom: "12px", width: "100%",
+          }}>
+            Lihat Pesanan Saya
+          </button>
+        )}
+
         <button onClick={() => { setHalaman(null); setTab("beranda"); }} style={{
-          background: "none", border: "2px solid #E5E7EB",
-          borderRadius: "50px", padding: "13px 36px",
-          fontSize: "13px", fontWeight: "700",
-          cursor: "pointer", width: "100%", color: "#6B7280",
+          background: "none", border: "none",
+          fontSize: "13px", fontWeight: "600",
+          cursor: "pointer", width: "100%", color: "#9CA3AF",
         }}>
           Kembali ke Beranda
         </button>
@@ -249,14 +324,30 @@ export default function App() {
         </div>
       )}
 
-      {tab === "support" && <Support />}
+      {tab === "notifikasi" && (
+        <div style={{ background: "#F2F2F0", minHeight: "100vh", paddingBottom: "80px" }}>
+          <Header halaman="notifikasi" judul="Notifikasi" />
+          <div style={{
+            display: "flex", flexDirection: "column", alignItems: "center",
+            justifyContent: "center", padding: "80px 32px", textAlign: "center",
+          }}>
+            <div style={{ fontWeight: "900", fontSize: "18px", color: "#0A0A0A", marginBottom: "8px" }}>
+              Belum Ada Notifikasi
+            </div>
+            <div style={{ fontSize: "13px", color: "#9CA3AF", lineHeight: 1.6 }}>
+              Notifikasi pesanan, promo, dan update status akan muncul di sini.
+            </div>
+          </div>
+        </div>
+      )}
 
       {tab === "akun" && (
         <Akun
           akun={akun}
+          pesananList={pesananList}
           onLogin={(data) => setAkun(data)}
           onLogout={() => setAkun(null)}
-          onLihatPesanan={() => setHalaman("pesanan")}
+          onLihatPesanan={(filter) => { setPesananFilter(filter || null); setHalaman("pesanan"); }}
         />
       )}
 
