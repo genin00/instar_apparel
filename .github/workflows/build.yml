@@ -36,9 +36,8 @@ jobs:
       - name: Build web app
         run: npm run build
 
-
       - name: Sync web to Android
-        run: npx cap sync android --no-deps
+        run: npx cap sync android
 
       - name: Generate Keystore
         run: |
