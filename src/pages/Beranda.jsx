@@ -84,7 +84,7 @@ const testimoni = [
   },
 ];
 
-export default function Beranda({ onCustom, onWishlist, wishlist = [], onLihatSemua, onBuatSepertiIni }) {
+export default function Beranda({ onCustom, onWishlist, wishlist = [], onLihatSemua, onLihatKarya, onBuatSepertiIni }) {
   const [activeTestimoni, setActiveTestimoni] = useState(0);
 
   return (
@@ -212,7 +212,7 @@ export default function Beranda({ onCustom, onWishlist, wishlist = [], onLihatSe
 
       {/* ── KARYA INSTAR ── */}
       <div style={{ padding: "32px 20px 0" }}>
-        <KaryaInstar preview onLihatSemua={onLihatSemua} onBuatSepertiIni={onBuatSepertiIni} />
+        <KaryaInstar preview onLihatSemua={onLihatKarya} onBuatSepertiIni={onBuatSepertiIni} />
       </div>
 
       {/* ── PRODUK UNGGULAN ── */}

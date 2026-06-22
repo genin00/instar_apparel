@@ -5,7 +5,18 @@
 // ═══════════════════════════════════════════════════════════
 
 import { useState } from "react";
-import karyaData, { kategoriKarya } from "../data/karya.js";
+import karyaData from "../data/karya.js";
+
+const kategoriKarya = [
+  { id: "semua",      label: "Semua" },
+  { id: "kelas",      label: "Kelas" },
+  { id: "event",      label: "Event" },
+  { id: "perpisahan", label: "Perpisahan" },
+  { id: "komunitas",  label: "Komunitas" },
+  { id: "umkm",       label: "UMKM" },
+  { id: "instansi",   label: "Instansi" },
+  { id: "custom",     label: "Custom" },
+];
 import products, { warnaKaos, ukuranTersedia } from "../data/products.js";
 
 // ── CAROUSEL FOTO (gambar utama + galeri detail) ───────────

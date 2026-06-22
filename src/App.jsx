@@ -225,6 +225,7 @@ export default function App() {
           onWishlist={handleWishlist}
           wishlist={wishlist}
           onLihatSemua={() => setTab("produk")}
+          onLihatKarya={() => setTab("karya")}
           onBuatSepertiIni={handleBuatSepertiIni}
         />
       )}
