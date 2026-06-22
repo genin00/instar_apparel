@@ -36,11 +36,6 @@ jobs:
       - name: Build web app
         run: npm run build
 
-      - name: Init Capacitor
-        run: npx cap init "Instar Apparel" "com.instarapparel.app" --web-dir=dist
-
-      - name: Add Android platform
-        run: npx cap add android
 
       - name: Sync web to Android
         run: npx cap sync android
