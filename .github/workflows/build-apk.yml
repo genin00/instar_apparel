@@ -1,0 +1,82 @@
+name: Build PWA to APK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: temurin
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build web app
+        run: npm run build
+
+      - name: Deploy to Netlify
+        run: npx netlify-cli deploy --prod --dir=dist --auth=${{ secrets.NETLIFY_AUTH_TOKEN }} --site=${{ secrets.NETLIFY_SITE_ID }}
+
+      - name: Install Bubblewrap
+        run: npm install -g @bubblewrap/cli
+
+      - name: Generate Keystore
+        run: |
+          keytool -genkey -v \
+            -keystore ./signing.keystore \
+            -alias instar \
+            -keyalg RSA \
+            -keysize 2048 \
+            -validity 10000 \
+            -storepass ${{ secrets.KEYSTORE_PASSWORD }} \
+            -keypass ${{ secrets.KEYSTORE_PASSWORD }} \
+            -dname "CN=Instar Apparel, OU=Dev, O=Instar, L=Palopo, S=Sulsel, C=ID"
+
+      - name: Init Bubblewrap project
+        run: |
+          bubblewrap init \
+            --manifest https://instarapparel.netlify.app/manifest.json \
+            --directory ./twa \
+            --packageId com.instarapparel.app \
+            --name "Instar Apparel" \
+            --shortName "Instar" \
+            --themeColor "#0A0A0A" \
+            --backgroundColor "#F2F2F0" \
+            --startUrl "/" \
+            --iconUrl https://instarapparel.netlify.app/icons/icon-512.png \
+            --maskableIconUrl https://instarapparel.netlify.app/icons/icon-512.png \
+            --appVersion 1 \
+            --appVersionName "1.0.0" \
+            --signingKeyPath ../signing.keystore \
+            --signingKeyAlias instar \
+            --signingKeyPassword ${{ secrets.KEYSTORE_PASSWORD }} \
+            --signingStorePassword ${{ secrets.KEYSTORE_PASSWORD }}
+
+      - name: Build APK
+        working-directory: ./twa
+        run: bubblewrap build --skipPwaValidation
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: instar-apparel-apk
+          path: |
+            ./twa/app-release-signed.apk
+            ./twa/app-release-bundle.aab
+          retention-days: 30
