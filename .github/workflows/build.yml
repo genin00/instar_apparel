@@ -38,7 +38,7 @@ jobs:
 
 
       - name: Sync web to Android
-        run: npx cap sync android
+        run: npx cap sync android --no-deps
 
       - name: Generate Keystore
         run: |
