@@ -2,7 +2,7 @@
 //  ORDER SERVICE — Supabase
 // ═══════════════════════════════════════════════════════════
 
-const SUPABASE_URL = "https://wfgjvpbehhbuysdklimg.supabase.co"\;
+const SUPABASE_URL = "https://wfgjvpbehhbuysdklimg.supabase.co";
 const SUPABASE_KEY = "sb_publishable_savuuXHTZZp_FZuTNfKqjQ_2iKIx6ZA";
 
 const headers = {
