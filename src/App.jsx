@@ -303,11 +303,14 @@ Saya belum punya desain dan ingin konsultasi dengan tim desainer. Mohon bantuann
       fontFamily: "'Inter', system-ui, sans-serif",
       background: "#F2F2F0",
       minHeight:  "100vh",
+      position:   "relative",
+      overflowX:  "hidden",
       maxWidth:   "480px",
       margin:     "0 auto",
-      position:   "relative",
+      width:      "100%",
     }}>
 
+      <div style={{ width: "100%", overflowX: "hidden", boxSizing: "border-box" }}>
       {tab === "beranda" && (
         <Beranda
           onCustom={handleCustom}
@@ -330,30 +333,17 @@ Saya belum punya desain dan ingin konsultasi dengan tim desainer. Mohon bantuann
       )}
 
       {tab === "karya" && (
-        <div style={{ background: "#F2F2F0", minHeight: "100vh", paddingBottom: "80px" }}>
-          <Header halaman="karya" judul="Karya Instar" />
-          <div style={{ padding: "20px" }}>
+        <div style={{ background: "#F2F2F0", minHeight: "100vh", paddingBottom: "80px", overflowX: "hidden" }}>
+          <Header halaman="karya" judul="Karya Instar"
+            keranjangCount={keranjang.length}
+            onKeranjang={() => setHalaman("keranjang")} />
+          <div style={{ padding: "16px", boxSizing: "border-box", overflowX: "hidden" }}>
             <KaryaInstar onBuatSepertiIni={handleBuatSepertiIni} />
           </div>
         </div>
       )}
 
-      {tab === "notifikasi" && (
-        <div style={{ background: "#F2F2F0", minHeight: "100vh", paddingBottom: "80px" }}>
-          <Header halaman="notifikasi" judul="Notifikasi" />
-          <div style={{
-            display: "flex", flexDirection: "column", alignItems: "center",
-            justifyContent: "center", padding: "80px 32px", textAlign: "center",
-          }}>
-            <div style={{ fontWeight: "900", fontSize: "18px", color: "#0A0A0A", marginBottom: "8px" }}>
-              Belum Ada Notifikasi
-            </div>
-            <div style={{ fontSize: "13px", color: "#9CA3AF", lineHeight: 1.6 }}>
-              Notifikasi pesanan, promo, dan update status akan muncul di sini.
-            </div>
-          </div>
-        </div>
-      )}
+
 
       {tab === "akun" && (
         <Akun
@@ -365,6 +355,7 @@ Saya belum punya desain dan ingin konsultasi dengan tim desainer. Mohon bantuann
         />
       )}
 
+      </div>
       <BottomNav
         aktif={tab}
         onChange={(t) => { setTab(t); setHalaman(null); }}

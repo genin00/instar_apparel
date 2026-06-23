@@ -211,7 +211,7 @@ export default function Beranda({ onCustom, onWishlist, wishlist = [], onLihatSe
       </div>
 
       {/* ── KARYA INSTAR ── */}
-      <div style={{ padding: "32px 20px 0" }}>
+      <div style={{ padding: "32px 20px 0", overflowX: "hidden", width: "100%" }}>
         <KaryaInstar preview onLihatSemua={onLihatKarya} onBuatSepertiIni={onBuatSepertiIni} />
       </div>
 

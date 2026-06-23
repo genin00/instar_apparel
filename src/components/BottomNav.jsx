@@ -54,21 +54,7 @@ const navItems = [
       </svg>
     ),
   },
-  {
-    id:    "notifikasi",
-    label: "Notifikasi",
-    icon:  (active) => (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"
-          fill={active ? "#0A0A0A" : "none"}
-          stroke={active ? "#0A0A0A" : "#9CA3AF"}
-          strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M13.73 21a2 2 0 0 1-3.46 0"
-          stroke={active ? "#0A0A0A" : "#9CA3AF"}
-          strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    ),
-  },
+
   {
     id:    "akun",
     label: "Akun",
@@ -89,19 +75,19 @@ const navItems = [
 export default function BottomNav({ aktif, onChange, keranjangCount = 0 }) {
   return (
     <div style={{
-      position:        "fixed",
-      bottom:          0,
-      left:            0,
-      right:           0,
-      background:      "#FFFFFF",
-      borderTop:       "1px solid #E5E7EB",
-      display:         "flex",
-      alignItems:      "center",
-      justifyContent:  "space-around",
-      padding:         "8px 0 12px",
-      zIndex:          100,
-      maxWidth:        "480px",
-      margin:          "0 auto",
+      position:       "fixed",
+      bottom:         0,
+      left:           "50%",
+      transform:      "translateX(-50%)",
+      width:          "100%",
+      maxWidth:       "480px",
+      background:     "#FFFFFF",
+      borderTop:      "1px solid #E5E7EB",
+      display:        "flex",
+      alignItems:     "center",
+      justifyContent: "space-around",
+      padding:        "8px 0 12px",
+      zIndex:         100,
     }}>
       {navItems.map((item) => {
         const isActive = aktif === item.id;

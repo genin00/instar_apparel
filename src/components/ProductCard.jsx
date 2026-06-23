@@ -127,6 +127,8 @@ export default function ProductCard({
       background:   "#FFFFFF",
       borderRadius: "16px",
       overflow:     "hidden",
+      width:        "100%",
+      minWidth:     0,
       boxShadow:    "0 2px 8px rgba(0,0,0,0.07)",
       position:     "relative",
     }}>
@@ -182,21 +184,21 @@ export default function ProductCard({
 
       {/* Foto produk */}
       <div style={{
-        background:     "#F2F2F0",
-        height:         "180px",
-        display:        "flex",
-        alignItems:     "center",
-        justifyContent: "center",
-        overflow:       "hidden",
+        background: "#F2F2F0",
+        width:      "100%",
+        aspectRatio: "3/4",
+        overflow:   "hidden",
       }}>
         {produk.mockup ? (
           <img
             src={produk.mockup}
             alt={produk.nama}
-            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            style={{ width: "100%", height: "100%", objectFit: "contain" }}
           />
         ) : (
-          <span style={{ fontSize: "56px" }}>👕</span>
+          <div style={{ width:"100%", height:"100%", display:"flex", alignItems:"center", justifyContent:"center" }}>
+            <span style={{ fontSize: "56px" }}>👕</span>
+          </div>
         )}
       </div>
 
