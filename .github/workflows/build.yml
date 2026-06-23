@@ -42,6 +42,9 @@ jobs:
       - name: Sync web to Android
         run: npx cap sync android --inline
 
+      - name: Restore custom icons
+        run: git checkout android/app/src/main/res/
+
       - name: Generate Keystore
         run: |
           keytool -genkey -v \
