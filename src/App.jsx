@@ -66,6 +66,31 @@ export default function App() {
   const [chatPesanan,    setChatPesanan]    = useState(null);
 
   useEffect(() => { save("instar_keranjang", keranjang);   }, [keranjang]);
+
+  // ── Handle tombol back Android ──────────────────────────────
+  useEffect(() => {
+    const handlePopState = (e) => {
+      e.preventDefault();
+      if (halaman) {
+        // Kembali ke halaman sebelumnya
+        if (halaman === "chat") setHalaman("daftar-chat");
+        else if (halaman === "checkout") setHalaman("keranjang");
+        else if (halaman === "tulis-review") setHalaman("pesanan");
+        else setHalaman(null);
+      } else if (tab !== "beranda") {
+        setTab("beranda");
+      } else {
+        // Di beranda — push state lagi supaya tidak keluar app
+        window.history.pushState(null, "", window.location.href);
+      }
+      // Selalu push state baru supaya back button tetap tersedia
+      window.history.pushState(null, "", window.location.href);
+    };
+
+    window.history.pushState(null, "", window.location.href);
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [halaman, tab]);
   useEffect(() => { save("instar_wishlist",  wishlist);    }, [wishlist]);
   // Auth listener — deteksi login/logout otomatis
   useEffect(() => {
