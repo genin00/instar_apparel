@@ -160,6 +160,13 @@ export default function App() {
     setKeranjang(prev => prev.filter(i => i.id !== id));
   };
 
+  const requireLogin = (pesan, callback) => {
+    if (akun) { callback(); return; }
+    setLoginPesan(pesan);
+    setLoginCallback(() => callback);
+    setShowLogin(true);
+  };
+
   const handleCheckout = (items) => {
     if (!akun) {
       requireLogin("Login untuk melanjutkan checkout", () => {
@@ -191,13 +198,6 @@ export default function App() {
     );
     setCheckoutItems([]);
     setHalaman("pesanan");
-  };
-
-  const requireLogin = (pesan, callback) => {
-    if (akun) { callback(); return; }
-    setLoginPesan(pesan);
-    setLoginCallback(() => callback);
-    setShowLogin(true);
   };
 
   const handleChatDesainerExec = async (item) => {
