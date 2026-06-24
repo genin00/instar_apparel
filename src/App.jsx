@@ -186,6 +186,34 @@ export default function App() {
     setHalaman("pesanan");
   };
 
+  const handleChatDesainer = async (item) => {
+    const orderId = "IA-" + Math.floor(100000 + Math.random() * 900000);
+    const pesananBaru = {
+      orderId,
+      tanggal: new Date().toLocaleDateString("id-ID", {
+        day: "2-digit", month: "short", year: "numeric",
+      }),
+      status: "desain",
+      items: [item],
+      totalQty: item.totalQty,
+      totalHarga: item.totalHarga,
+      nama: profilUser?.nama || akun?.email || "",
+      noWA: profilUser?.no_wa || "",
+      tipeBayar: "lunas",
+      metodeBayar: "-",
+      pengiriman: "toko",
+    };
+    await saveOrder(pesananBaru);
+    setPesananList(prev => [pesananBaru, ...prev]);
+    setChatPesanan(pesananBaru);
+    setHalaman("chat");
+  };
+
+  const handleBukaChat = (pesanan) => {
+    setChatPesanan(pesanan);
+    setHalaman("chat");
+  };
+
   // ── RENDER ─────────────────────────────────────────────────
 
   if (authLoading) {
@@ -265,35 +293,7 @@ export default function App() {
     );
   }
 
-  const handleChatDesainer = async (item) => {
-    // Auto simpan pesanan dengan status "desain"
-    const orderId = "IA-" + Math.floor(100000 + Math.random() * 900000);
-    const pesananBaru = {
-      orderId,
-      tanggal: new Date().toLocaleDateString("id-ID", {
-        day: "2-digit", month: "short", year: "numeric",
-      }),
-      status: "desain",
-      items: [item],
-      totalQty: item.totalQty,
-      totalHarga: item.totalHarga,
-      nama: profilUser?.nama || akun?.email || "",
-      noWA: profilUser?.no_wa || "",
-      tipeBayar: "lunas",
-      metodeBayar: "-",
-      pengiriman: "toko",
-    };
-    await saveOrder(pesananBaru);
-    setPesananList(prev => [pesananBaru, ...prev]);
-    // Buka chat langsung
-    setChatPesanan(pesananBaru);
-    setHalaman("chat");
-  };
 
-  const handleBukaChat = (pesanan) => {
-    setChatPesanan(pesanan);
-    setHalaman("chat");
-  };
 
   if (halaman === "daftar-chat") {
     return (
