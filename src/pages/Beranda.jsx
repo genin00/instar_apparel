@@ -63,29 +63,27 @@ const caraKerja = [
 
 
 // ── TESTIMONI DATA ──────────────────────────────────────────
-const testimoni = [
+const quotes = [
   {
-    nama:   "Andi R.",
-    peran:  "Ketua Kelas XII",
-    bintang: 5,
-    teks:   "Hasilnya melebihi ekspektasi! Kualitas bahan bagus, desain rapi, pengiriman tepat waktu.",
+    teks: "Pakaian bukan sekadar kain — ia adalah bahasa tanpa kata yang menceritakan siapa kamu.",
+    ikon: "✍️",
   },
   {
-    nama:   "Komunitas Trail Palopo",
-    peran:  "Order 45 pcs",
-    bintang: 5,
-    teks:   "Sudah 2x order di Instar. Konsisten kualitasnya, admin responsif, recommended!",
+    teks: "Identitasmu terlalu unik untuk diwakilkan oleh desain orang lain. Buat milikmu sendiri.",
+    ikon: "🎨",
   },
   {
-    nama:   "Ibu Sari",
-    peran:  "Guru SMAN 1 Palopo",
-    bintang: 5,
-    teks:   "Kaos guru acara wisuda sangat memuaskan. Akan order lagi untuk acara berikutnya.",
+    teks: "Satu kaos custom bisa menyatukan komunitas, merayakan momen, dan meninggalkan kenangan.",
+    ikon: "👕",
+  },
+  {
+    teks: "Kreativitas adalah cara terbaik untuk memperkenalkan dirimu kepada dunia.",
+    ikon: "🌟",
   },
 ];
 
 export default function Beranda({ onChat, onCustom, onWishlist, wishlist = [], onLihatSemua, onLihatKarya, onBuatSepertiIni }) {
-  const [activeTestimoni, setActiveTestimoni] = useState(0);
+  const [activeQuote, setActiveQuote] = useState(0);
 
   return (
     <div style={{ background: "#F2F2F0", minHeight: "100vh", paddingBottom: "80px" }}>
