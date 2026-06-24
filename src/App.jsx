@@ -3,6 +3,8 @@
 // ═══════════════════════════════════════════════════════════
 
 import { useState, useEffect } from "react";
+import { supabase } from "./lib/supabase.js";
+import { getProfil } from "./lib/auth.js";
 import BottomNav     from "./components/BottomNav.jsx";
 import Header        from "./components/Header.jsx";
 import KaryaInstar   from "./components/KaryaInstar.jsx";
@@ -53,14 +55,44 @@ export default function App() {
   const [keranjang,     setKeranjang]     = useState(() => load("instar_keranjang", []));
   const [wishlist,      setWishlist]      = useState(() => load("instar_wishlist", []));
   const [pesananList,   setPesananList]   = useState(() => { try { const v = localStorage.getItem("instar_pesanan"); return v ? JSON.parse(v) : []; } catch { return []; } });
-  const [akun,          setAkun]          = useState(() => load("instar_akun", null));
+  const [akun,          setAkun]          = useState(null);
+  const [profilUser,    setProfilUser]    = useState(null);
+  const [authLoading,   setAuthLoading]   = useState(true);
   const [checkoutItems,  setCheckoutItems]  = useState([]);
   const [reviewTarget,   setReviewTarget]   = useState(null);
   const [pesananFilter,  setPesananFilter]  = useState(null);
 
   useEffect(() => { save("instar_keranjang", keranjang);   }, [keranjang]);
   useEffect(() => { save("instar_wishlist",  wishlist);    }, [wishlist]);
-  useEffect(() => { save("instar_akun",      akun);        }, [akun]);
+  // Auth listener — deteksi login/logout otomatis
+  useEffect(() => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (session?.user) {
+        setAkun(session.user);
+        try {
+          const profil = await getProfil(session.user.id);
+          setProfilUser(profil);
+        } catch {}
+      }
+      setAuthLoading(false);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (session?.user) {
+          setAkun(session.user);
+          try {
+            const profil = await getProfil(session.user.id);
+            setProfilUser(profil);
+          } catch {}
+        } else {
+          setAkun(null);
+          setProfilUser(null);
+        }
+      }
+    );
+    return () => subscription.unsubscribe();
+  }, []);
 
   const handleIntroSelesai = () => {
     simpanIntroHariIni();
@@ -127,6 +159,21 @@ export default function App() {
   };
 
   // ── RENDER ─────────────────────────────────────────────────
+
+  if (authLoading) {
+    return (
+      <div style={{
+        minHeight: "100vh", display: "flex",
+        alignItems: "center", justifyContent: "center",
+        background: "#F2F2F0",
+      }}>
+        <div style={{ textAlign: "center" }}>
+          <div style={{ fontSize: "32px", marginBottom: "12px" }}>⏳</div>
+          <div style={{ fontSize: "13px", color: "#9CA3AF" }}>Memuat...</div>
+        </div>
+      </div>
+    );
+  }
 
   if (!introSelesai) {
     return <Intro onSelesai={handleIntroSelesai} />;
@@ -348,10 +395,13 @@ Saya belum punya desain dan ingin konsultasi dengan tim desainer. Mohon bantuann
       {tab === "akun" && (
         <Akun
           akun={akun}
+          profil={profilUser}
+          onProfilUpdate={(p) => setProfilUser(p)}
           pesananList={pesananList}
-          onLogin={(data) => setAkun(data)}
-          onLogout={() => setAkun(null)}
+          onLogout={() => { setAkun(null); setProfilUser(null); }}
           onLihatPesanan={(filter) => { setPesananFilter(filter || null); setHalaman("pesanan"); }}
+          wishlist={wishlist}
+          onCustom={handleCustom}
         />
       )}
 

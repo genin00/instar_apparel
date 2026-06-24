@@ -1,163 +1,458 @@
 // ═══════════════════════════════════════════════════════════
-//  INSTAR APPAREL — AKUN (Shopee-style)
+//  INSTAR APPAREL — AKUN (Supabase Auth + Shopee-style)
 // ═══════════════════════════════════════════════════════════
 
 import { useState } from "react";
 import Header from "../components/Header.jsx";
 import config from "../config.js";
 import { InstarLogo } from "../components/Header.jsx";
+import { register, login, logout, updateProfil, uploadFotoProfil, getAlamat, tambahAlamat, updateAlamat, hapusAlamat } from "../lib/auth.js";
 
+// ── AVATAR ───────────────────────────────────────────────────
+function Avatar({ profil, size = 56 }) {
+  if (profil?.foto_url) {
+    return (
+      <img src={profil.foto_url} alt="foto profil"
+        style={{ width: size, height: size, borderRadius: size / 4,
+          objectFit: "cover", flexShrink: 0 }} />
+    );
+  }
+  const inisial = (profil?.nama || "?").charAt(0).toUpperCase();
+  return (
+    <div style={{
+      width: size, height: size, borderRadius: size / 4,
+      background: "#C8392B", display: "flex",
+      alignItems: "center", justifyContent: "center",
+      fontSize: size * 0.4, fontWeight: "900",
+      color: "white", flexShrink: 0,
+    }}>{inisial}</div>
+  );
+}
+
+// ── FAQ ITEM ─────────────────────────────────────────────────
 function FAQItem({ q, a }) {
   const [open, setOpen] = useState(false);
   return (
-    <div style={{ background: "white", borderRadius: "12px", marginBottom: "8px", overflow: "hidden" }}>
+    <div style={{ borderBottom: "1px solid #F2F2F0" }}>
       <button onClick={() => setOpen(!open)} style={{
-        width: "100%", padding: "14px 16px",
+        width: "100%", padding: "14px 0",
         display: "flex", alignItems: "center",
         justifyContent: "space-between", gap: "12px",
         background: "none", border: "none", cursor: "pointer", textAlign: "left",
       }}>
-        <div style={{ fontWeight: "700", fontSize: "13px", color: "#0A0A0A", flex: 1 }}>{q}</div>
-        <div style={{
-          width: "24px", height: "24px", borderRadius: "50%",
-          background: open ? "#0A0A0A" : "#F2F2F0",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          flexShrink: 0, transition: "all 0.2s",
-        }}>
-          <svg width="10" height="10" viewBox="0 0 10 10" fill="none"
-            style={{ transform: open ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s" }}>
-            <path d="M1 3L5 7L9 3" stroke={open ? "white" : "#9CA3AF"}
-              strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </div>
+        <div style={{ fontWeight: "600", fontSize: "13px", color: "#0A0A0A", flex: 1 }}>{q}</div>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+          style={{ transform: open ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s", flexShrink: 0 }}>
+          <path d="M6 9l6 6 6-6" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
       </button>
       {open && (
-        <div style={{
-          padding: "12px 16px 14px", fontSize: "13px",
-          color: "#6B7280", lineHeight: 1.6, borderTop: "1px solid #F2F2F0",
-        }}>{a}</div>
+        <div style={{ paddingBottom: "14px", fontSize: "13px", color: "#6B7280", lineHeight: 1.6 }}>{a}</div>
       )}
     </div>
   );
 }
 
-function MenuItem({ icon, bg, label, sub, action, badge }) {
+// ── MENU ITEM ────────────────────────────────────────────────
+function MenuItem({ icon, label, sub, action, danger }) {
   return (
     <button onClick={action || undefined} style={{
-      width: "100%", display: "flex", alignItems: "center", gap: "12px",
-      background: "white", borderRadius: "12px",
-      padding: "14px 16px", border: "none",
-      cursor: action ? "pointer" : "default",
-      marginBottom: "8px", textAlign: "left",
+      width: "100%", display: "flex", alignItems: "center", gap: "14px",
+      background: "none", border: "none", borderBottom: "1px solid #F2F2F0",
+      padding: "14px 0", cursor: action ? "pointer" : "default", textAlign: "left",
     }}>
-      <div style={{
-        width: "40px", height: "40px", borderRadius: "10px",
-        background: bg || "#F2F2F0", display: "flex",
-        alignItems: "center", justifyContent: "center",
-        fontSize: "20px", flexShrink: 0,
-      }}>{icon}</div>
+      <div style={{ color: danger ? "#C8392B" : "#374151", flexShrink: 0 }}>{icon}</div>
       <div style={{ flex: 1 }}>
-        <div style={{ fontWeight: "700", fontSize: "13px", color: "#0A0A0A" }}>{label}</div>
-        {sub && <div style={{ fontSize: "11px", color: "#9CA3AF", lineHeight: 1.4, marginTop: "2px" }}>{sub}</div>}
+        <div style={{ fontWeight: "600", fontSize: "13px", color: danger ? "#C8392B" : "#0A0A0A" }}>{label}</div>
+        {sub && <div style={{ fontSize: "11px", color: "#9CA3AF", marginTop: "2px" }}>{sub}</div>}
       </div>
-      {badge && (
-        <div style={{
-          background: "#C8392B", color: "white",
-          fontSize: "10px", fontWeight: "800",
-          padding: "2px 7px", borderRadius: "20px",
-        }}>{badge}</div>
+      {action && (
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+          <path d="M9 18l6-6-6-6" stroke={danger ? "#C8392B" : "#9CA3AF"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
       )}
-      {action && !badge && <div style={{ color: "#9CA3AF", fontSize: "16px" }}>→</div>}
     </button>
   );
 }
 
-// ── BELUM LOGIN ─────────────────────────────────────────
-function HalamanLogin({ onLogin }) {
-  const [mode, setMode] = useState("login");
-  const [nama, setNama] = useState("");
-  const [noWA, setNoWA] = useState("");
-  const [error, setError] = useState("");
+// ── SECTION CARD ─────────────────────────────────────────────
+function SectionCard({ title, children }) {
+  return (
+    <div style={{ background: "white", borderRadius: "14px", padding: "0 16px", marginBottom: "12px" }}>
+      {title && (
+        <div style={{ fontSize: "11px", fontWeight: "700", color: "#9CA3AF",
+          letterSpacing: "1px", padding: "14px 0 8px", borderBottom: "1px solid #F2F2F0" }}>
+          {title}
+        </div>
+      )}
+      {children}
+    </div>
+  );
+}
 
-  const handleSubmit = () => {
-    if (!nama.trim()) { setError("Nama tidak boleh kosong"); return; }
-    if (!noWA.trim()) { setError("Nomor WA tidak boleh kosong"); return; }
-    if (noWA.length < 10) { setError("Nomor WA tidak valid"); return; }
-    setError("");
-    onLogin({ nama: nama.trim(), noWA: noWA.trim() });
-  };
+// ── HALAMAN LOGIN/REGISTER ────────────────────────────────────
+function HalamanAuth() {
+  const [mode, setMode] = useState("login");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [nama, setNama] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [info, setInfo] = useState("");
 
   const S = {
     input: {
-      width: "100%", borderRadius: "10px", border: "2px solid #E5E7EB",
+      width: "100%", borderRadius: "10px", border: "1.5px solid #E5E7EB",
       padding: "12px 14px", fontSize: "14px", outline: "none",
       boxSizing: "border-box", fontFamily: "inherit", marginBottom: "12px",
+      background: "#FAFAFA",
     },
+  };
+
+  const handleSubmit = async () => {
+    if (!email.trim()) { setError("Email tidak boleh kosong"); return; }
+    if (!password.trim()) { setError("Password tidak boleh kosong"); return; }
+    if (mode === "daftar" && !nama.trim()) { setError("Nama tidak boleh kosong"); return; }
+    setError(""); setInfo(""); setLoading(true);
+    try {
+      if (mode === "login") {
+        await login({ email: email.trim(), password });
+      } else {
+        await register({ email: email.trim(), password, nama: nama.trim() });
+        setInfo("Cek email kamu untuk verifikasi akun, lalu login.");
+        setMode("login");
+      }
+    } catch (e) {
+      setError(e.message || "Terjadi kesalahan, coba lagi.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div style={{ background: "#F2F2F0", minHeight: "100vh", paddingBottom: "80px" }}>
       <Header halaman="akun" judul="Akun" />
       <div style={{ padding: "32px 20px 0", maxWidth: "480px", margin: "0 auto" }}>
-        <div style={{ textAlign: "center", marginBottom: "28px" }}>
+
+        <div style={{ textAlign: "center", marginBottom: "32px" }}>
           <div style={{
             width: "72px", height: "72px", borderRadius: "20px",
             background: "#0A0A0A", display: "flex",
-            alignItems: "center", justifyContent: "center", margin: "0 auto 12px",
+            alignItems: "center", justifyContent: "center", margin: "0 auto 14px",
           }}>
             <InstarLogo size={44} white />
           </div>
-          <div style={{ fontWeight: "900", fontSize: "20px", color: "#0A0A0A" }}>
-            {mode === "login" ? "Masuk ke Akun" : "Buat Akun Baru"}
+          <div style={{ fontWeight: "900", fontSize: "22px", color: "#0A0A0A" }}>
+            {mode === "login" ? "Masuk" : "Buat Akun"}
           </div>
           <div style={{ fontSize: "13px", color: "#9CA3AF", marginTop: "4px" }}>
-            {mode === "login" ? "Masuk untuk melihat pesanan kamu" : "Daftar untuk mulai custom kaos"}
+            {mode === "login" ? "Masuk untuk melanjutkan" : "Daftar untuk mulai custom kaos"}
           </div>
         </div>
 
         <div style={{ background: "white", borderRadius: "16px", padding: "20px", marginBottom: "14px" }}>
-          <div style={{ fontWeight: "700", fontSize: "13px", color: "#374151", marginBottom: "6px" }}>Nama Lengkap</div>
-          <input value={nama} onChange={e => { setNama(e.target.value); setError(""); }}
-            placeholder="Masukkan nama lengkap" style={S.input} />
-          <div style={{ fontWeight: "700", fontSize: "13px", color: "#374151", marginBottom: "6px" }}>Nomor WhatsApp</div>
-          <input value={noWA} onChange={e => { setNoWA(e.target.value); setError(""); }}
-            placeholder="08xxxxxxxxxx" type="tel"
-            style={{ ...S.input, marginBottom: error ? "6px" : "0" }} />
-          {error && <div style={{ fontSize: "12px", color: "#C8392B", marginBottom: "10px" }}>⚠️ {error}</div>}
+          {mode === "daftar" && (
+            <>
+              <div style={{ fontWeight: "600", fontSize: "12px", color: "#374151", marginBottom: "6px" }}>Nama Lengkap</div>
+              <input value={nama} onChange={e => { setNama(e.target.value); setError(""); }}
+                placeholder="Masukkan nama lengkap" style={S.input} />
+            </>
+          )}
+          <div style={{ fontWeight: "600", fontSize: "12px", color: "#374151", marginBottom: "6px" }}>Email</div>
+          <input value={email} onChange={e => { setEmail(e.target.value); setError(""); }}
+            placeholder="email@contoh.com" type="email" style={S.input} />
+          <div style={{ fontWeight: "600", fontSize: "12px", color: "#374151", marginBottom: "6px" }}>Password</div>
+          <input value={password} onChange={e => { setPassword(e.target.value); setError(""); }}
+            placeholder="Minimal 6 karakter" type="password"
+            style={{ ...S.input, marginBottom: 0 }} />
+          {error && <div style={{ fontSize: "12px", color: "#C8392B", marginTop: "8px" }}>⚠️ {error}</div>}
+          {info && <div style={{ fontSize: "12px", color: "#10B981", marginTop: "8px" }}>✅ {info}</div>}
         </div>
 
-        <button onClick={handleSubmit} style={{
+        <button onClick={handleSubmit} disabled={loading} style={{
           width: "100%", padding: "14px", borderRadius: "12px", border: "none",
-          background: "#0A0A0A", color: "white", fontWeight: "900",
-          fontSize: "15px", cursor: "pointer", marginBottom: "12px",
+          background: loading ? "#E5E7EB" : "#0A0A0A", color: loading ? "#9CA3AF" : "white",
+          fontWeight: "900", fontSize: "15px", cursor: loading ? "not-allowed" : "pointer",
+          marginBottom: "12px",
         }}>
-          {mode === "login" ? "Masuk →" : "Daftar →"}
+          {loading ? "Memuat..." : mode === "login" ? "Masuk →" : "Daftar →"}
         </button>
 
         <div style={{ textAlign: "center" }}>
-          <button onClick={() => { setMode(mode === "login" ? "daftar" : "login"); setError(""); }}
-            style={{ background: "none", border: "none", cursor: "pointer", fontSize: "13px", color: "#9CA3AF" }}>
+          <button onClick={() => { setMode(mode === "login" ? "daftar" : "login"); setError(""); setInfo(""); }}
+            style={{ background: "none", border: "none", cursor: "pointer", fontSize: "13px", color: "#6B7280" }}>
             {mode === "login" ? "Belum punya akun? Daftar" : "Sudah punya akun? Masuk"}
           </button>
-        </div>
-
-        <div style={{
-          background: "#F9FAFB", borderRadius: "12px", padding: "14px", marginTop: "20px",
-          fontSize: "12px", color: "#9CA3AF", lineHeight: 1.6, textAlign: "center",
-        }}>
-          Data kamu disimpan di perangkat ini saja dan hanya digunakan untuk keperluan pesanan.
         </div>
       </div>
     </div>
   );
 }
 
-// ── SUDAH LOGIN ──────────────────────────────────────────
-export default function Akun({ akun, pesananList = [], onLogin, onLogout, onLihatPesanan, wishlist = [], onCustom }) {
-  if (!akun) return <HalamanLogin onLogin={onLogin} />;
+// ── HALAMAN PENGATURAN PROFIL ─────────────────────────────────
+function HalamanProfil({ profil, userId, onBack, onUpdate }) {
+  const [nama, setNama] = useState(profil?.nama || "");
+  const [bio, setBio] = useState(profil?.bio || "");
+  const [noHp, setNoHp] = useState(profil?.no_hp || "");
+  const [jenisKelamin, setJenisKelamin] = useState(profil?.jenis_kelamin || "");
+  const [tanggalLahir, setTanggalLahir] = useState(profil?.tanggal_lahir || "");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [sukses, setSukses] = useState(false);
+  const fileRef = useState(null);
+
+  const handleSimpan = async () => {
+    setLoading(true); setError(""); setSukses(false);
+    try {
+      const updated = await updateProfil(userId, { nama, bio, no_hp: noHp, jenis_kelamin: jenisKelamin, tanggal_lahir: tanggalLahir });
+      onUpdate(updated);
+      setSukses(true);
+      setTimeout(() => setSukses(false), 2000);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFoto = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setLoading(true);
+    try {
+      const url = await uploadFotoProfil(userId, file);
+      onUpdate({ ...profil, foto_url: url });
+    } catch (e) {
+      setError("Gagal upload foto: " + e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const S = {
+    label: { fontWeight: "600", fontSize: "12px", color: "#374151", marginBottom: "6px" },
+    input: {
+      width: "100%", borderRadius: "10px", border: "1.5px solid #E5E7EB",
+      padding: "11px 14px", fontSize: "14px", outline: "none",
+      boxSizing: "border-box", fontFamily: "inherit", background: "#FAFAFA",
+    },
+  };
+
+  return (
+    <div style={{ background: "#F2F2F0", minHeight: "100vh", paddingBottom: "100px" }}>
+      <Header halaman="profil" judul="Edit Profil" onBack={onBack} />
+      <div style={{ padding: "16px", maxWidth: "480px", margin: "0 auto" }}>
+
+        {/* Foto profil */}
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: "20px" }}>
+          <Avatar profil={profil} size={80} />
+          <label style={{
+            marginTop: "10px", fontSize: "13px", fontWeight: "700",
+            color: "#0A0A0A", cursor: "pointer", padding: "6px 16px",
+            background: "white", borderRadius: "20px", border: "1.5px solid #E5E7EB",
+          }}>
+            Ganti Foto
+            <input type="file" accept="image/*" style={{ display: "none" }} onChange={handleFoto} />
+          </label>
+        </div>
+
+        <SectionCard>
+          <div style={S.label}>Nama Lengkap</div>
+          <input value={nama} onChange={e => setNama(e.target.value)} placeholder="Nama lengkap" style={{ ...S.input, marginBottom: "14px" }} />
+          <div style={S.label}>Bio</div>
+          <textarea value={bio} onChange={e => setBio(e.target.value)} placeholder="Ceritakan sedikit tentang dirimu..." rows={3}
+            style={{ ...S.input, resize: "none", marginBottom: "14px" }} />
+          <div style={S.label}>Nomor HP</div>
+          <input value={noHp} onChange={e => setNoHp(e.target.value)} placeholder="08xxxxxxxxxx" type="tel" style={{ ...S.input, marginBottom: "14px" }} />
+          <div style={S.label}>Jenis Kelamin</div>
+          <select value={jenisKelamin} onChange={e => setJenisKelamin(e.target.value)}
+            style={{ ...S.input, marginBottom: "14px" }}>
+            <option value="">Pilih jenis kelamin</option>
+            <option value="Laki-laki">Laki-laki</option>
+            <option value="Perempuan">Perempuan</option>
+          </select>
+          <div style={S.label}>Tanggal Lahir</div>
+          <input value={tanggalLahir} onChange={e => setTanggalLahir(e.target.value)} type="date"
+            style={{ ...S.input, marginBottom: 0 }} />
+        </SectionCard>
+
+        {error && <div style={{ fontSize: "12px", color: "#C8392B", marginBottom: "10px", padding: "0 4px" }}>⚠️ {error}</div>}
+        {sukses && <div style={{ fontSize: "12px", color: "#10B981", marginBottom: "10px", padding: "0 4px" }}>✅ Profil berhasil disimpan!</div>}
+
+        <button onClick={handleSimpan} disabled={loading} style={{
+          width: "100%", padding: "14px", borderRadius: "12px", border: "none",
+          background: loading ? "#E5E7EB" : "#0A0A0A", color: loading ? "#9CA3AF" : "white",
+          fontWeight: "900", fontSize: "15px", cursor: loading ? "not-allowed" : "pointer",
+        }}>
+          {loading ? "Menyimpan..." : "Simpan Perubahan"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ── HALAMAN ALAMAT ────────────────────────────────────────────
+function HalamanAlamat({ userId, onBack }) {
+  const [daftarAlamat, setDaftarAlamat] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [formMode, setFormMode] = useState(null); // null | "tambah" | alamat object
+  const [form, setForm] = useState({ label: "", nama_penerima: "", no_hp: "", alamat_lengkap: "", kota: "", provinsi: "", kode_pos: "", is_utama: false });
+
+  const muat = async () => {
+    setLoading(true);
+    try { setDaftarAlamat(await getAlamat(userId)); } catch {}
+    setLoading(false);
+  };
+
+  useState(() => { muat(); }, []);
+
+  const bukaForm = (alamat) => {
+    if (alamat === "tambah") {
+      setForm({ label: "", nama_penerima: "", no_hp: "", alamat_lengkap: "", kota: "", provinsi: "", kode_pos: "", is_utama: false });
+      setFormMode("tambah");
+    } else {
+      setForm({ ...alamat });
+      setFormMode(alamat);
+    }
+  };
+
+  const handleSimpan = async () => {
+    try {
+      if (formMode === "tambah") {
+        await tambahAlamat(userId, form);
+      } else {
+        await updateAlamat(formMode.id, form);
+      }
+      setFormMode(null);
+      muat();
+    } catch (e) { alert(e.message); }
+  };
+
+  const handleHapus = async (id) => {
+    if (!confirm("Hapus alamat ini?")) return;
+    try { await hapusAlamat(id); muat(); } catch (e) { alert(e.message); }
+  };
+
+  const S = {
+    input: {
+      width: "100%", borderRadius: "10px", border: "1.5px solid #E5E7EB",
+      padding: "11px 14px", fontSize: "13px", outline: "none",
+      boxSizing: "border-box", fontFamily: "inherit", background: "#FAFAFA", marginBottom: "10px",
+    },
+  };
+
+  if (formMode !== null) {
+    return (
+      <div style={{ background: "#F2F2F0", minHeight: "100vh", paddingBottom: "100px" }}>
+        <Header halaman="alamat" judul={formMode === "tambah" ? "Tambah Alamat" : "Edit Alamat"} onBack={() => setFormMode(null)} />
+        <div style={{ padding: "16px", maxWidth: "480px", margin: "0 auto" }}>
+          <SectionCard>
+            {[
+              { key: "label", label: "Label (Rumah, Kantor, dll)", placeholder: "Rumah" },
+              { key: "nama_penerima", label: "Nama Penerima", placeholder: "Nama lengkap" },
+              { key: "no_hp", label: "Nomor HP Penerima", placeholder: "08xxxxxxxxxx" },
+              { key: "alamat_lengkap", label: "Alamat Lengkap", placeholder: "Jl. Contoh No. 1" },
+              { key: "kota", label: "Kota/Kabupaten", placeholder: "Palopo" },
+              { key: "provinsi", label: "Provinsi", placeholder: "Sulawesi Selatan" },
+              { key: "kode_pos", label: "Kode Pos", placeholder: "91900" },
+            ].map(f => (
+              <div key={f.key}>
+                <div style={{ fontWeight: "600", fontSize: "12px", color: "#374151", marginBottom: "4px" }}>{f.label}</div>
+                <input value={form[f.key]} onChange={e => setForm(p => ({ ...p, [f.key]: e.target.value }))}
+                  placeholder={f.placeholder} style={S.input} />
+              </div>
+            ))}
+            <label style={{ display: "flex", alignItems: "center", gap: "10px", padding: "6px 0", cursor: "pointer" }}>
+              <input type="checkbox" checked={form.is_utama} onChange={e => setForm(p => ({ ...p, is_utama: e.target.checked }))} />
+              <span style={{ fontSize: "13px", fontWeight: "600", color: "#374151" }}>Jadikan Alamat Utama</span>
+            </label>
+          </SectionCard>
+          <button onClick={handleSimpan} style={{
+            width: "100%", padding: "14px", borderRadius: "12px", border: "none",
+            background: "#0A0A0A", color: "white", fontWeight: "900", fontSize: "15px", cursor: "pointer",
+          }}>Simpan Alamat</button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ background: "#F2F2F0", minHeight: "100vh", paddingBottom: "100px" }}>
+      <Header halaman="alamat" judul="Alamat Saya" onBack={onBack} />
+      <div style={{ padding: "16px", maxWidth: "480px", margin: "0 auto" }}>
+        {loading ? (
+          <div style={{ textAlign: "center", padding: "40px", color: "#9CA3AF" }}>Memuat...</div>
+        ) : daftarAlamat.length === 0 ? (
+          <div style={{ textAlign: "center", padding: "40px 20px" }}>
+            <div style={{ fontSize: "40px", marginBottom: "12px" }}>📍</div>
+            <div style={{ fontWeight: "700", fontSize: "15px", color: "#374151", marginBottom: "6px" }}>Belum ada alamat</div>
+            <div style={{ fontSize: "13px", color: "#9CA3AF" }}>Tambahkan alamat pengiriman kamu</div>
+          </div>
+        ) : (
+          daftarAlamat.map(a => (
+            <div key={a.id} style={{ background: "white", borderRadius: "14px", padding: "14px 16px", marginBottom: "10px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
+                    <div style={{ fontWeight: "800", fontSize: "13px", color: "#0A0A0A" }}>{a.label || "Alamat"}</div>
+                    {a.is_utama && (
+                      <div style={{ background: "#0A0A0A", color: "white", fontSize: "9px", fontWeight: "700", padding: "2px 8px", borderRadius: "20px" }}>
+                        UTAMA
+                      </div>
+                    )}
+                  </div>
+                  <div style={{ fontSize: "12px", color: "#374151", fontWeight: "600" }}>{a.nama_penerima} · {a.no_hp}</div>
+                  <div style={{ fontSize: "12px", color: "#6B7280", marginTop: "2px", lineHeight: 1.4 }}>
+                    {a.alamat_lengkap}, {a.kota}, {a.provinsi} {a.kode_pos}
+                  </div>
+                </div>
+              </div>
+              <div style={{ display: "flex", gap: "8px", marginTop: "12px" }}>
+                <button onClick={() => bukaForm(a)} style={{
+                  flex: 1, padding: "8px", borderRadius: "8px",
+                  border: "1.5px solid #E5E7EB", background: "white",
+                  fontSize: "12px", fontWeight: "700", cursor: "pointer", color: "#374151",
+                }}>Edit</button>
+                <button onClick={() => handleHapus(a.id)} style={{
+                  flex: 1, padding: "8px", borderRadius: "8px",
+                  border: "1.5px solid #FCA5A5", background: "#FEF2F2",
+                  fontSize: "12px", fontWeight: "700", cursor: "pointer", color: "#C8392B",
+                }}>Hapus</button>
+              </div>
+            </div>
+          ))
+        )}
+        <button onClick={() => bukaForm("tambah")} style={{
+          width: "100%", padding: "13px", borderRadius: "12px",
+          border: "2px dashed #D1D5DB", background: "white",
+          fontWeight: "700", fontSize: "13px", cursor: "pointer", color: "#374151",
+          marginTop: "4px",
+        }}>+ Tambah Alamat Baru</button>
+      </div>
+    </div>
+  );
+}
+
+// ── HALAMAN UTAMA AKUN ────────────────────────────────────────
+export default function Akun({ akun, profil, onProfilUpdate, pesananList = [], onLogout, onLihatPesanan, wishlist = [], onCustom }) {
+  const [subHalaman, setSubHalaman] = useState(null);
+
+  if (!akun) return <HalamanAuth />;
+
+  // Sub-halaman
+  if (subHalaman === "profil") {
+    return <HalamanProfil profil={profil} userId={akun.id} onBack={() => setSubHalaman(null)} onUpdate={(p) => { onProfilUpdate(p); setSubHalaman(null); }} />;
+  }
+  if (subHalaman === "alamat") {
+    return <HalamanAlamat userId={akun.id} onBack={() => setSubHalaman(null)} />;
+  }
 
   const hitungStatus = (...statuses) =>
     pesananList.filter(p => statuses.includes(p.status)).length || null;
+
+  const handleLogout = async () => {
+    try { await logout(); onLogout(); } catch {}
+  };
 
   return (
     <div style={{ background: "#F2F2F0", minHeight: "100vh", paddingBottom: "80px" }}>
@@ -167,192 +462,137 @@ export default function Akun({ akun, pesananList = [], onLogin, onLogout, onLiha
 
         {/* ── PROFILE CARD ── */}
         <div style={{
-          background: "#0A0A0A", borderRadius: "16px",
-          padding: "20px", marginBottom: "16px", color: "white",
+          background: "white", borderRadius: "16px",
+          padding: "16px", marginBottom: "12px",
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
-            <div style={{
-              width: "56px", height: "56px", borderRadius: "16px",
-              background: "#C8392B", display: "flex",
-              alignItems: "center", justifyContent: "center",
-              fontSize: "24px", fontWeight: "900", flexShrink: 0,
-            }}>
-              {akun.nama.charAt(0).toUpperCase()}
+            <Avatar profil={profil} size={56} />
+            <div style={{ flex: 1 }}>
+              <div style={{ fontWeight: "900", fontSize: "17px", color: "#0A0A0A" }}>
+                {profil?.nama || akun.email?.split("@")[0] || "Pengguna"}
+              </div>
+              <div style={{ fontSize: "12px", color: "#9CA3AF", marginTop: "2px" }}>{akun.email}</div>
+              {profil?.bio && (
+                <div style={{ fontSize: "12px", color: "#6B7280", marginTop: "4px", lineHeight: 1.4 }}>{profil.bio}</div>
+              )}
             </div>
-            <div>
-              <div style={{ fontWeight: "900", fontSize: "18px" }}>{akun.nama}</div>
-              <div style={{ fontSize: "13px", color: "#6B7280", marginTop: "2px" }}>📞 {akun.noWA}</div>
-            </div>
+            <button onClick={() => setSubHalaman("profil")} style={{
+              background: "#F2F2F0", border: "none", borderRadius: "8px",
+              padding: "6px 12px", fontSize: "12px", fontWeight: "700",
+              color: "#374151", cursor: "pointer",
+            }}>Edit</button>
           </div>
         </div>
 
         {/* ── PESANAN SAYA ── */}
-        <div style={{ background: "white", borderRadius: "14px", padding: "16px", marginBottom: "12px" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+        <SectionCard>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 0 12px" }}>
             <div style={{ fontWeight: "800", fontSize: "14px", color: "#0A0A0A" }}>Pesanan Saya</div>
-            <button onClick={onLihatPesanan} style={{
+            <button onClick={() => onLihatPesanan()} style={{
               background: "none", border: "none", fontSize: "12px",
               fontWeight: "700", color: "#9CA3AF", cursor: "pointer",
             }}>Lihat Semua →</button>
           </div>
-          <div style={{ display: "flex", justifyContent: "space-around" }}>
+          <div style={{ display: "flex", justifyContent: "space-around", paddingBottom: "14px" }}>
             {[
-              {
-                label: "Belum Bayar", count: hitungStatus("diterima", "konfirmasi"), filter: ["diterima", "konfirmasi"],
-                icon: (
-                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-                    <rect x="2" y="5" width="20" height="14" rx="2" stroke="#374151" strokeWidth="1.6"/>
-                    <path d="M2 10h20" stroke="#374151" strokeWidth="1.6"/>
-                    <path d="M6 15h4" stroke="#374151" strokeWidth="1.6" strokeLinecap="round"/>
-                  </svg>
-                ),
-              },
-              {
-                label: "Desain", count: hitungStatus("desain"), filter: ["desain"],
-                icon: (
-                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-                    <path d="M12 19l7-7-3-3-7 7v3h3z" stroke="#374151" strokeWidth="1.6" strokeLinejoin="round"/>
-                    <path d="M16 5l3 3" stroke="#374151" strokeWidth="1.6" strokeLinecap="round"/>
-                    <path d="M5 21h14" stroke="#374151" strokeWidth="1.6" strokeLinecap="round"/>
-                  </svg>
-                ),
-              },
-              {
-                label: "Cetak", count: hitungStatus("produksi", "qc"), filter: ["produksi", "qc"],
-                icon: (
-                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-                    <path d="M6 9V4h12v5" stroke="#374151" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
-                    <rect x="2" y="9" width="20" height="8" rx="2" stroke="#374151" strokeWidth="1.6"/>
-                    <path d="M6 14h12v6H6z" stroke="#374151" strokeWidth="1.6" strokeLinejoin="round"/>
-                    <circle cx="18" cy="13" r="1" fill="#374151"/>
-                  </svg>
-                ),
-              },
-              {
-                label: "Dikirim", count: hitungStatus("dikirim"), filter: ["dikirim"],
-                icon: (
-                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-                    <path d="M3 12h13M3 6h8M3 18h8" stroke="#374151" strokeWidth="1.6" strokeLinecap="round"/>
-                    <path d="M16 6l5 6-5 6" stroke="#374151" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                ),
-              },
-              {
-                label: "Selesai", count: hitungStatus("selesai"), filter: ["selesai"],
-                icon: (
-                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-                    <circle cx="12" cy="12" r="9" stroke="#374151" strokeWidth="1.6"/>
-                    <path d="M8 12l3 3 5-5" stroke="#374151" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                ),
-              },
-            ].map((s, i) => (
-              <button key={i} onClick={() => onLihatPesanan(s.filter)} style={{
-                display: "flex", flexDirection: "column", alignItems: "center",
-                gap: "6px", background: "none", border: "none", cursor: "pointer",
-                padding: "0 2px",
-              }}>
-                <div style={{ position: "relative", display: "inline-flex" }}>
-                  {s.icon}
-                  {s.count > 0 && (
-                    <div style={{
-                      position: "absolute", top: "-6px", right: "-8px",
-                      background: "#C8392B", color: "white",
-                      fontSize: "10px", fontWeight: "900",
-                      minWidth: "16px", height: "16px",
-                      borderRadius: "10px", padding: "0 4px",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                    }}>{s.count}</div>
-                  )}
-                </div>
-                <div style={{ fontSize: "10px", color: "#6B7280", fontWeight: "600", textAlign: "center", lineHeight: 1.3 }}>{s.label}</div>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* ── WISHLIST ── */}
-        {wishlist.length > 0 && (
-          <div style={{ marginBottom: "12px" }}>
-            <div style={{
-              fontSize: "10px", letterSpacing: "2px", color: "#9CA3AF",
-              fontWeight: "700", marginBottom: "10px",
-            }}>FAVORIT SAYA</div>
-            <div style={{ display: "flex", gap: "10px", overflowX: "auto", paddingBottom: "4px" }}>
-              {wishlist.slice(0, 5).map((produk) => (
-                <button key={produk.id} onClick={() => onCustom?.(produk)} style={{
-                  flexShrink: 0, width: "80px", background: "white",
-                  borderRadius: "10px", border: "none", cursor: "pointer",
-                  padding: "8px",
+              { label: "Belum\nBayar", statuses: ["diterima", "konfirmasi"],
+                icon: <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><rect x="2" y="5" width="20" height="14" rx="2" stroke="#374151" strokeWidth="1.6"/><path d="M2 10h20" stroke="#374151" strokeWidth="1.6"/><path d="M6 15h4" stroke="#374151" strokeWidth="1.6" strokeLinecap="round"/></svg> },
+              { label: "Desain", statuses: ["desain"],
+                icon: <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M12 19l7-7-3-3-7 7v3h3z" stroke="#374151" strokeWidth="1.6" strokeLinejoin="round"/><path d="M16 5l3 3" stroke="#374151" strokeWidth="1.6" strokeLinecap="round"/><path d="M5 21h14" stroke="#374151" strokeWidth="1.6" strokeLinecap="round"/></svg> },
+              { label: "Cetak", statuses: ["produksi", "qc"],
+                icon: <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M6 9V4h12v5" stroke="#374151" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/><rect x="2" y="9" width="20" height="8" rx="2" stroke="#374151" strokeWidth="1.6"/><path d="M6 14h12v6H6z" stroke="#374151" strokeWidth="1.6" strokeLinejoin="round"/><circle cx="18" cy="13" r="1" fill="#374151"/></svg> },
+              { label: "Dikirim", statuses: ["dikirim"],
+                icon: <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M3 12h13M3 6h8M3 18h8" stroke="#374151" strokeWidth="1.6" strokeLinecap="round"/><path d="M16 6l5 6-5 6" stroke="#374151" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg> },
+              { label: "Selesai", statuses: ["selesai"],
+                icon: <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#374151" strokeWidth="1.6"/><path d="M8 12l3 3 5-5" stroke="#374151" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg> },
+            ].map((s, i) => {
+              const count = hitungStatus(...s.statuses);
+              return (
+                <button key={i} onClick={() => onLihatPesanan(s.statuses)} style={{
+                  display: "flex", flexDirection: "column", alignItems: "center",
+                  gap: "6px", background: "none", border: "none", cursor: "pointer", padding: "0 2px",
                 }}>
-                  <div style={{ fontSize: "28px", textAlign: "center", marginBottom: "4px" }}>👕</div>
-                  <div style={{ fontSize: "9px", fontWeight: "700", color: "#374151",
-                    textAlign: "center", lineHeight: 1.3, overflow: "hidden",
-                    display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
-                  }}>{produk.nama}</div>
+                  <div style={{ position: "relative" }}>
+                    {s.icon}
+                    {count > 0 && (
+                      <div style={{
+                        position: "absolute", top: "-5px", right: "-7px",
+                        background: "#C8392B", color: "white", fontSize: "9px",
+                        fontWeight: "900", minWidth: "15px", height: "15px",
+                        borderRadius: "10px", padding: "0 3px",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                      }}>{count}</div>
+                    )}
+                  </div>
+                  <div style={{ fontSize: "9px", color: "#6B7280", fontWeight: "600",
+                    textAlign: "center", lineHeight: 1.3, whiteSpace: "pre-line" }}>{s.label}</div>
                 </button>
-              ))}
-            </div>
+              );
+            })}
           </div>
-        )}
+        </SectionCard>
 
-        {/* ── BANTUAN & INFORMASI ── */}
-        <div style={{
-          fontSize: "10px", letterSpacing: "2px", color: "#9CA3AF",
-          fontWeight: "700", marginBottom: "10px",
-        }}>BANTUAN & INFORMASI</div>
+        {/* ── AKUN & KEAMANAN ── */}
+        <SectionCard title="AKUN & KEAMANAN">
+          <MenuItem
+            icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="#374151" strokeWidth="1.7"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="#374151" strokeWidth="1.7" strokeLinecap="round"/></svg>}
+            label="Edit Profil" sub="Nama, bio, jenis kelamin, tanggal lahir"
+            action={() => setSubHalaman("profil")} />
+          <MenuItem
+            icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="10" rx="2" stroke="#374151" strokeWidth="1.7"/><path d="M8 11V7a4 4 0 0 1 8 0v4" stroke="#374151" strokeWidth="1.7" strokeLinecap="round"/></svg>}
+            label="Ganti Password" sub="Ubah password akun kamu"
+            action={() => alert("Fitur ganti password akan segera hadir")} />
+        </SectionCard>
 
-        <MenuItem
-          icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="white" strokeWidth="1.8" strokeLinejoin="round"/></svg>}
-          bg="#25D366" label="WhatsApp Bisnis" sub="Order, pembayaran, konfirmasi"
-          action={() => { const msg = encodeURIComponent(config.waPesan.orderBaru); window.open(`https://wa.me/${config.whatsapp.bisnis}?text=${msg}`, "_blank"); }} />
+        {/* ── ALAMAT ── */}
+        <SectionCard title="PENGIRIMAN">
+          <MenuItem
+            icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" stroke="#374151" strokeWidth="1.7"/><circle cx="12" cy="10" r="3" stroke="#374151" strokeWidth="1.7"/></svg>}
+            label="Alamat Saya" sub="Kelola alamat pengiriman"
+            action={() => setSubHalaman("alamat")} />
+        </SectionCard>
 
-        <MenuItem
-          icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
-          bg="#C8392B" label="Konsultasi Desainer" sub="Diskusi desain, revisi, brief"
-          action={() => { const msg = encodeURIComponent(config.waPesan.konsultasi); window.open(`https://wa.me/${config.whatsapp.desainer}?text=${msg}`, "_blank"); }} />
-
-        <MenuItem
-          icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke="white" strokeWidth="1.8" strokeLinejoin="round"/><path d="M22 6l-10 7L2 6" stroke="white" strokeWidth="1.8" strokeLinecap="round"/></svg>}
-          bg="#3B82F6" label="Email Support" sub={config.brand.email}
-          action={() => window.open(`mailto:${config.brand.email}`, "_blank")} />
-
-        <MenuItem
-          icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" stroke="#374151" strokeWidth="1.8" strokeLinejoin="round"/><circle cx="12" cy="10" r="3" stroke="#374151" strokeWidth="1.8"/></svg>}
-          bg="#F2F2F0" label="Lokasi Toko" sub={config.brand.address}
-          action={() => window.open(config.brand.mapsUrl, "_blank")} />
-
-        <MenuItem
-          icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#374151" strokeWidth="1.8"/><path d="M12 7v5l3 3" stroke="#374151" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
-          bg="#F2F2F0" label="Jam Operasional" sub={`${config.jamOperasional.hari} · ${config.jamOperasional.jam}`} />
-
-        {/* ── FAQ ── */}
-        <div style={{
-          fontSize: "10px", letterSpacing: "2px", color: "#9CA3AF",
-          fontWeight: "700", margin: "16px 0 10px",
-        }}>FAQ</div>
-        {config.faq.map((item, i) => (
-          <FAQItem key={i} q={item.q} a={item.a} />
-        ))}
-
-        {/* ── APP INFO ── */}
-        <div style={{
-          textAlign: "center", padding: "20px 0",
-          fontSize: "11px", color: "#9CA3AF",
-        }}>
-          <div style={{ marginBottom: "4px", fontWeight: "700", letterSpacing: "1px" }}>INSTAR APPAREL</div>
-          <div>{config.brand.tagline}</div>
-          <div style={{ marginTop: "4px" }}>v1.0.0</div>
-        </div>
+        {/* ── BANTUAN ── */}
+        <SectionCard title="BANTUAN">
+          <MenuItem
+            icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#374151" strokeWidth="1.7"/><path d="M12 8c-1.1 0-2 .9-2 2s.9 2 2 2 2 .9 2 2" stroke="#374151" strokeWidth="1.7" strokeLinecap="round"/><circle cx="12" cy="17" r="0.8" fill="#374151"/></svg>}
+            label="Pusat Bantuan (FAQ)"
+            action={() => setSubHalaman("faq")} />
+          <MenuItem
+            icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="#374151" strokeWidth="1.7" strokeLinejoin="round"/></svg>}
+            label="Hubungi Customer Service"
+            sub="WhatsApp & Email"
+            action={() => { const msg = encodeURIComponent(config.waPesan.orderBaru); window.open(`https://wa.me/${config.whatsapp.bisnis}?text=${msg}`, "_blank"); }} />
+          <MenuItem
+            icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" stroke="#374151" strokeWidth="1.7" strokeLinejoin="round"/></svg>}
+            label="Suka? Nilai Kami"
+            sub="Beri bintang di Play Store"
+            action={() => alert("Mengarahkan ke Play Store...")} />
+          <MenuItem
+            icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#374151" strokeWidth="1.7"/><path d="M12 8v4M12 16h.01" stroke="#374151" strokeWidth="1.7" strokeLinecap="round"/></svg>}
+            label="Versi Aplikasi"
+            sub="v1.0.0" />
+          <MenuItem
+            icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><polyline points="3 6 5 6 21 6" stroke="#C8392B" strokeWidth="1.7" strokeLinecap="round"/><path d="M19 6l-1 14H6L5 6" stroke="#C8392B" strokeWidth="1.7" strokeLinejoin="round"/><path d="M10 11v6M14 11v6" stroke="#C8392B" strokeWidth="1.7" strokeLinecap="round"/><path d="M9 6V4h6v2" stroke="#C8392B" strokeWidth="1.7" strokeLinejoin="round"/></svg>}
+            label="Ajukan Penghapusan Akun"
+            danger
+            action={() => alert("Hubungi CS untuk penghapusan akun")} />
+        </SectionCard>
 
         {/* ── LOGOUT ── */}
-        <button onClick={onLogout} style={{
+        <button onClick={handleLogout} style={{
           width: "100%", padding: "13px", borderRadius: "12px",
-          border: "2px solid #FCA5A5", background: "#FEF2F2",
-          color: "#C8392B", fontWeight: "800", fontSize: "14px", cursor: "pointer",
+          border: "1.5px solid #FCA5A5", background: "#FEF2F2",
+          color: "#C8392B", fontWeight: "800", fontSize: "14px",
+          cursor: "pointer", marginTop: "4px",
         }}>
           Keluar dari Akun
         </button>
+
+        {/* App info */}
+        <div style={{ textAlign: "center", padding: "20px 0 0", fontSize: "11px", color: "#D1D5DB" }}>
+          INSTAR APPAREL · {config.brand.tagline}
+        </div>
 
       </div>
     </div>
