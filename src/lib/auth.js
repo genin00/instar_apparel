@@ -155,3 +155,10 @@ export async function getRataRatingKarya(karyaId) {
   const rata = data.reduce((a, b) => a + b.rating, 0) / data.length;
   return Math.round(rata * 10) / 10;
 }
+
+export async function resetPassword(email) {
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: window.location.origin + "/?reset=true",
+  });
+  if (error) throw error;
+}

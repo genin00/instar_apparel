@@ -596,28 +596,61 @@ export default function CustomBuilder({ produk, onBack, onTambahKeranjang, desai
               <div>
                 <div style={{ fontWeight:900, fontSize:"22px", marginBottom:"6px", color:"#0A0A0A" }}>Punya Desain?</div>
                 <div style={{ fontSize:"13px", color:"#9CA3AF", marginBottom:"20px", lineHeight:1.5 }}>Pilih cara kamu mau mendesain kaos ini</div>
-                <div style={{ display:"flex", flexDirection:"column", gap:"10px" }}>
-                  {[
-                    { id:"upload", icon:"📁", bg:"#0A0A0A", judul:"Punya Desain Sendiri",
-                      desc:"Upload file PNG, JPG. Atur posisi desain di area cetak A4." },
-                    { id:"brief",  icon:"✏️", bg:"#C8392B", judul:"Belum Punya Desain",
-                      desc:"Ceritakan idemu. Tim desainer kami akan bantu wujudkan." },
-                  ].map(opt => (
-                    <button key={opt.id} onClick={() => setOpsiDesain(opt.id)} style={{
-                      background:"white", borderRadius:"14px", padding:"18px 16px",
-                      border:"2px solid #E5E7EB", cursor:"pointer", textAlign:"left",
-                      display:"flex", gap:"14px", alignItems:"center",
+                <div style={{ display:"flex", flexDirection:"column", gap:"12px" }}>
+
+                  <button onClick={() => setOpsiDesain("upload")} style={{
+                    background:"white", borderRadius:"18px", padding:"20px 18px",
+                    border:"1.5px solid #E5E7EB", cursor:"pointer", textAlign:"left",
+                    display:"flex", gap:"16px", alignItems:"center",
+                    boxShadow:"0 2px 16px rgba(0,0,0,0.07)",
+                  }}>
+                    <div style={{
+                      width:"52px", height:"52px", borderRadius:"14px",
+                      background:"#0A0A0A",
+                      display:"flex", alignItems:"center", justifyContent:"center",
+                      flexShrink:0,
                     }}>
-                      <div style={{ width:"48px", height:"48px", borderRadius:"12px",
-                        background:opt.bg, display:"flex", alignItems:"center",
-                        justifyContent:"center", flexShrink:0, fontSize:"22px" }}>{opt.icon}</div>
-                      <div>
-                        <div style={{ fontWeight:"800", fontSize:"15px", marginBottom:"3px" }}>{opt.judul}</div>
-                        <div style={{ fontSize:"12px", color:"#9CA3AF", lineHeight:1.4 }}>{opt.desc}</div>
-                      </div>
-                      <div style={{ marginLeft:"auto", color:"#9CA3AF", fontSize:"18px" }}>→</div>
-                    </button>
-                  ))}
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                        <polyline points="17 8 12 3 7 8" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                        <line x1="12" y1="3" x2="12" y2="15" stroke="white" strokeWidth="1.8" strokeLinecap="round"/>
+                      </svg>
+                    </div>
+                    <div style={{ flex:1 }}>
+                      <div style={{ fontWeight:"800", fontSize:"15px", color:"#0A0A0A", marginBottom:"4px" }}>Punya Desain Sendiri</div>
+                      <div style={{ fontSize:"12px", color:"#9CA3AF", lineHeight:1.5 }}>Upload file PNG atau JPG. Atur posisi desain di area cetak A4.</div>
+                    </div>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                      <path d="M9 18l6-6-6-6" stroke="#D1D5DB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </button>
+
+                  <button onClick={() => setOpsiDesain("brief")} style={{
+                    background:"white", borderRadius:"18px", padding:"20px 18px",
+                    border:"1.5px solid #E5E7EB", cursor:"pointer", textAlign:"left",
+                    display:"flex", gap:"16px", alignItems:"center",
+                    boxShadow:"0 2px 16px rgba(0,0,0,0.07)",
+                  }}>
+                    <div style={{
+                      width:"52px", height:"52px", borderRadius:"14px",
+                      background:"#C8392B",
+                      display:"flex", alignItems:"center", justifyContent:"center",
+                      flexShrink:0,
+                    }}>
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <path d="M12 20h9" stroke="white" strokeWidth="1.8" strokeLinecap="round"/>
+                        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </div>
+                    <div style={{ flex:1 }}>
+                      <div style={{ fontWeight:"800", fontSize:"15px", color:"#0A0A0A", marginBottom:"4px" }}>Belum Punya Desain</div>
+                      <div style={{ fontSize:"12px", color:"#9CA3AF", lineHeight:1.5 }}>Ceritakan idemu. Tim desainer kami akan bantu wujudkan.</div>
+                    </div>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                      <path d="M9 18l6-6-6-6" stroke="#D1D5DB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </button>
+
                 </div>
               </div>
             )}
@@ -727,12 +760,22 @@ export default function CustomBuilder({ produk, onBack, onTambahKeranjang, desai
                   <div style={{ fontWeight:900, fontSize:"17px" }}>Konsultasi Desainer</div>
                 </div>
                 {/* Banner */}
-                <div style={{ background:"linear-gradient(135deg,#0A0A0A,#1a1a2e)", borderRadius:"14px",
-                  padding:"14px 16px", marginBottom:"14px", display:"flex", gap:"10px", alignItems:"center" }}>
-                  <div style={{ fontSize:"28px" }}>🎨</div>
-                  <div>
-                    <div style={{ color:"white", fontWeight:"800", fontSize:"13px", marginBottom:"3px" }}>Tim Desainer Siap Bantu</div>
-                    <div style={{ color:"#9CA3AF", fontSize:"11px", lineHeight:1.5 }}>Ceritakan idemu → Desainer buatkan → Kamu setujui → Produksi</div>
+                <div style={{ background:"linear-gradient(135deg,#0A0A0A,#1a1a2e)", borderRadius:"16px",
+                  padding:"16px 18px", marginBottom:"14px", display:"flex", gap:"14px", alignItems:"center" }}>
+                  <div style={{
+                    width:"48px", height:"48px", borderRadius:"12px",
+                    background:"rgba(255,255,255,0.08)",
+                    display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0,
+                  }}>
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+                      <circle cx="12" cy="12" r="3" stroke="white" strokeWidth="1.7"/>
+                      <path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14" stroke="white" strokeWidth="1.7" strokeLinecap="round"/>
+                      <path d="M15.54 8.46a5 5 0 0 1 0 7.07M8.46 8.46a5 5 0 0 0 0 7.07" stroke="#9CA3AF" strokeWidth="1.7" strokeLinecap="round"/>
+                    </svg>
+                  </div>
+                  <div style={{ flex:1 }}>
+                    <div style={{ color:"white", fontWeight:"800", fontSize:"14px", marginBottom:"4px" }}>Tim Desainer Siap Bantu</div>
+                    <div style={{ color:"#6B7280", fontSize:"11px", lineHeight:1.6 }}>Ceritakan idemu → Desainer buatkan → Kamu setujui → Produksi</div>
                   </div>
                 </div>
 
