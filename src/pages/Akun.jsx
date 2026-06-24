@@ -247,7 +247,14 @@ function HalamanAuth() {
           {loading ? "Memuat..." : mode === "login" ? "Masuk →" : "Daftar →"}
         </button>
 
-        <div style={{ textAlign: "center" }}>
+        <div style={{ textAlign: "center", display: "flex", flexDirection: "column", gap: "10px" }}>
+          {mode === "login" && (
+            <button onClick={() => { setResetMode(true); setError(""); setInfo(""); }}
+              style={{ background: "none", border: "none", cursor: "pointer",
+                fontSize: "13px", color: "#C8392B", fontWeight: "700" }}>
+              Lupa Sandi?
+            </button>
+          )}
           <button onClick={() => { setMode(mode === "login" ? "daftar" : "login"); setError(""); setInfo(""); }}
             style={{ background: "none", border: "none", cursor: "pointer", fontSize: "13px", color: "#6B7280" }}>
             {mode === "login" ? "Belum punya akun? Daftar" : "Sudah punya akun? Masuk"}
