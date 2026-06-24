@@ -163,7 +163,7 @@ export default function App() {
   const requireLogin = (pesan, callback) => {
     if (akun) { callback(); return; }
     setLoginPesan(pesan);
-    setLoginCallback(() => callback);
+    setLoginCallback({ fn: callback });
     setShowLogin(true);
   };
 
@@ -512,7 +512,7 @@ Saya belum punya desain dan ingin konsultasi dengan tim desainer. Mohon bantuann
           onClose={() => setShowLogin(false)}
           onSuccess={() => {
             setShowLogin(false);
-            loginCallback?.();
+            loginCallback?.fn?.();
           }}
         />
       )}
