@@ -64,6 +64,7 @@ export default function App() {
   const [reviewTarget,   setReviewTarget]   = useState(null);
   const [pesananFilter,  setPesananFilter]  = useState(null);
   const [chatPesanan,    setChatPesanan]    = useState(null);
+  const [customStep,     setCustomStep]     = useState(0);
 
   useEffect(() => { save("instar_keranjang", keranjang);   }, [keranjang]);
 
@@ -256,6 +257,7 @@ export default function App() {
         onBack={() => setHalaman(null)}
         onTambahKeranjang={handleTambahKeranjang}
         onChatDesainer={handleChatDesainer}
+        onStepChange={setCustomStep}
       />
     );
   }

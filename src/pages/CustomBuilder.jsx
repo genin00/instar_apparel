@@ -452,7 +452,7 @@ function ColorPicker({ warna, setWarna }) {
 }
 
 // ── MAIN COMPONENT ───────────────────────────────────────────
-export default function CustomBuilder({ produk, onBack, onTambahKeranjang, onChatDesainer, desainAwal }) {
+export default function CustomBuilder({ produk, onBack, onTambahKeranjang, onChatDesainer, onStepChange, desainAwal }) {
   const [step,         setStep]         = useState(0);
   const [warna,        setWarna]        = useState("#FFFFFF");
   const [opsiDesain,   setOpsiDesain]   = useState(desainAwal ? "upload" : null);
@@ -507,6 +507,11 @@ export default function CustomBuilder({ produk, onBack, onTambahKeranjang, onCha
     if (step > 0) setStep(s => s - 1);
     else onBack();
   };
+
+  // Beritahu App.jsx step saat ini untuk handle back button
+  useEffect(() => {
+    if (typeof onStepChange === "function") onStepChange(step);
+  }, [step]);
 
   const handleTambahKeranjang = () => {
     const item = {
