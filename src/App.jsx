@@ -161,6 +161,7 @@ export default function App() {
   };
 
   const requireLogin = (pesan) => {
+    alert("requireLogin dipanggil: " + pesan + " | showLogin akan: true");
     setLoginPesan(pesan);
     setShowLogin(true);
   };
@@ -220,6 +221,7 @@ export default function App() {
   };
 
   const handleChatDesainer = (item) => {
+    alert("handleChatDesainer dipanggil, akun: " + (akun ? akun.email : "null"));
     if (akun) {
       handleChatDesainerExec(item);
     } else {
@@ -269,6 +271,20 @@ export default function App() {
 
   if (halaman === "custom" && produkAktif) {
     return (
+      <>
+      {showLogin && (
+        <LoginPopup
+          pesan={loginPesan}
+          onClose={() => { setShowLogin(false); setPendingItem(null); }}
+          onSuccess={() => {
+            setShowLogin(false);
+            if (pendingItem) {
+              handleChatDesainerExec(pendingItem);
+              setPendingItem(null);
+            }
+          }}
+        />
+      )}
       <CustomBuilder
         produk={produkAktif}
         desainAwal={desainAwalAktif}
@@ -277,6 +293,7 @@ export default function App() {
         onChatDesainer={handleChatDesainer}
         onStepChange={setCustomStep}
       />
+      </>
     );
   }
 
@@ -510,15 +527,10 @@ Saya belum punya desain dan ingin konsultasi dengan tim desainer. Mohon bantuann
       {showLogin && (
         <LoginPopup
           pesan={loginPesan}
-          onClose={() => setShowLogin(false)}
+          onClose={() => { setShowLogin(false); setCheckoutItems([]); }}
           onSuccess={() => {
             setShowLogin(false);
-            if (pendingItem) {
-              handleChatDesainerExec(pendingItem);
-              setPendingItem(null);
-            } else if (checkoutItems.length > 0) {
-              setHalaman("checkout");
-            }
+            if (checkoutItems.length > 0) setHalaman("checkout");
           }}
         />
       )}

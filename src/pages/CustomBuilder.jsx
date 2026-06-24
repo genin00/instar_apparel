@@ -514,7 +514,7 @@ export default function CustomBuilder({ produk, onBack, onTambahKeranjang, onCha
   }, [step]);
 
   const handleTambahKeranjang = () => {
-    console.log("handleTambahKeranjang dipanggil", { opsiDesain, adaOnChat: !!onChatDesainer });
+    alert("opsiDesain: " + opsiDesain + " | adaOnChat: " + !!onChatDesainer);
     const item = {
       id: Date.now(), produk, warna, warnaLabel: warnaObj.nama,
       opsiDesain, uploads, posisiDesain, catatan, briefKat, briefTeks, kodeDesain,
