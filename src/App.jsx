@@ -161,7 +161,6 @@ export default function App() {
   };
 
   const requireLogin = (pesan) => {
-    alert("requireLogin dipanggil: " + pesan + " | showLogin akan: true");
     setLoginPesan(pesan);
     setShowLogin(true);
   };
@@ -221,7 +220,6 @@ export default function App() {
   };
 
   const handleChatDesainer = (item) => {
-    alert("handleChatDesainer dipanggil, akun: " + (akun ? akun.email : "null"));
     if (akun) {
       handleChatDesainerExec(item);
     } else {
