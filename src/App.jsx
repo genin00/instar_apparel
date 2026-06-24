@@ -481,7 +481,7 @@ Saya belum punya desain dan ingin konsultasi dengan tim desainer. Mohon bantuann
           onLihatSemua={() => setTab("produk")}
           onLihatKarya={() => setTab("karya")}
           onBuatSepertiIni={handleBuatSepertiIni}
-        onChat={() => setHalaman("daftar-chat")}
+        onChat={() => { if (akun) { setHalaman("daftar-chat"); } else { requireLogin("Login atau daftar untuk chat dengan desainer"); } }}
         />
       )}
 

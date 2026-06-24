@@ -289,25 +289,21 @@ export default function Beranda({ onChat, onCustom, onWishlist, wishlist = [], o
             marginBottom:  "4px",
             textTransform: "uppercase",
           }}>
-            Kata Mereka
+            Inspirasi Kami
           </div>
           <div style={{ fontWeight: 900, fontSize: "20px", color: "#0A0A0A" }}>
-            Testimoni
+            Quote of the Day
           </div>
         </div>
 
-        {/* Testimoni card */}
+        {/* Quote of the Day card */}
         <div style={{
           background:   "#0A0A0A",
           borderRadius: "16px",
           padding:      "20px",
           marginBottom: "12px",
         }}>
-          <div style={{ display: "flex", gap: "2px", marginBottom: "12px" }}>
-            {[...Array(testimoni[activeTestimoni].bintang)].map((_, i) => (
-              <span key={i} style={{ color: "#F59E0B", fontSize: "14px" }}>★</span>
-            ))}
-          </div>
+
           <div style={{
             fontSize:   "14px",
             color:      "#E5E7EB",
@@ -315,29 +311,29 @@ export default function Beranda({ onChat, onCustom, onWishlist, wishlist = [], o
             lineHeight: 1.6,
             marginBottom: "16px",
           }}>
-            "{testimoni[activeTestimoni].teks}"
+            "{quotes[activeQuote].teks}"
           </div>
           <div>
             <div style={{ fontWeight: "800", fontSize: "13px", color: "#FFFFFF" }}>
-              {testimoni[activeTestimoni].nama}
+              Instar Apparel
             </div>
             <div style={{ fontSize: "11px", color: "#6B7280" }}>
-              {testimoni[activeTestimoni].peran}
+              Palopo, Sulawesi Selatan
             </div>
           </div>
         </div>
 
         {/* Dot navigator */}
         <div style={{ display: "flex", justifyContent: "center", gap: "6px" }}>
-          {testimoni.map((_, i) => (
+          {quotes.map((_, i) => (
             <button
               key={i}
-              onClick={() => setActiveTestimoni(i)}
+              onClick={() => setActiveQuote(i)}
               style={{
-                width:        i === activeTestimoni ? "20px" : "6px",
+                width:        i === activeQuote ? "20px" : "6px",
                 height:       "6px",
                 borderRadius: "3px",
-                background:   i === activeTestimoni ? "#0A0A0A" : "#D1D5DB",
+                background:   i === activeQuote ? "#0A0A0A" : "#D1D5DB",
                 border:       "none",
                 cursor:       "pointer",
                 transition:   "all 0.3s ease",
