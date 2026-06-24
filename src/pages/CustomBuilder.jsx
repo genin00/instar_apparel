@@ -452,7 +452,7 @@ function ColorPicker({ warna, setWarna }) {
 }
 
 // ── MAIN COMPONENT ───────────────────────────────────────────
-export default function CustomBuilder({ produk, onBack, onTambahKeranjang, desainAwal }) {
+export default function CustomBuilder({ produk, onBack, onTambahKeranjang, onChatDesainer, desainAwal }) {
   const [step,         setStep]         = useState(0);
   const [warna,        setWarna]        = useState("#FFFFFF");
   const [opsiDesain,   setOpsiDesain]   = useState(desainAwal ? "upload" : null);
@@ -509,11 +509,16 @@ export default function CustomBuilder({ produk, onBack, onTambahKeranjang, desai
   };
 
   const handleTambahKeranjang = () => {
-    onTambahKeranjang({
+    const item = {
       id: Date.now(), produk, warna, warnaLabel: warnaObj.nama,
       opsiDesain, uploads, posisiDesain, catatan, briefKat, briefTeks, kodeDesain,
       modeUkuran, satuanSize, satuanQty, massalQty, totalQty, totalHarga,
-    });
+    };
+    if (opsiDesain === "brief" && onChatDesainer) {
+      onChatDesainer(item);
+    } else {
+      onTambahKeranjang(item);
+    }
   };
 
   const canNext = () => {
@@ -1031,9 +1036,10 @@ export default function CustomBuilder({ produk, onBack, onTambahKeranjang, desai
         ) : (
           <button onClick={handleTambahKeranjang} style={{
             flex:1,padding:"13px",borderRadius:"12px",border:"none",
-            background:"#C8392B",color:"white",fontWeight:"900",fontSize:"15px",cursor:"pointer",
+            background: opsiDesain === "brief" ? "#0A0A0A" : "#C8392B",
+            color:"white",fontWeight:"900",fontSize:"15px",cursor:"pointer",
             display:"flex",alignItems:"center",justifyContent:"center",gap:"8px" }}>
-            🛒 Tambah ke Keranjang
+            {opsiDesain === "brief" ? "💬 Chat dengan Desainer" : "🛒 Tambah ke Keranjang"}
           </button>
         )}
       </div>
