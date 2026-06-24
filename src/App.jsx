@@ -68,7 +68,7 @@ export default function App() {
   const [customStep,     setCustomStep]     = useState(0);
   const [showLogin,      setShowLogin]      = useState(false);
   const [loginPesan,     setLoginPesan]     = useState("");
-  const [loginCallback,  setLoginCallback]  = useState(null);
+  const [pendingItem,    setPendingItem]    = useState(null);
 
   useEffect(() => { save("instar_keranjang", keranjang);   }, [keranjang]);
 
@@ -160,19 +160,15 @@ export default function App() {
     setKeranjang(prev => prev.filter(i => i.id !== id));
   };
 
-  const requireLogin = (pesan, callback) => {
-    if (akun) { callback(); return; }
+  const requireLogin = (pesan) => {
     setLoginPesan(pesan);
-    setLoginCallback({ fn: callback });
     setShowLogin(true);
   };
 
   const handleCheckout = (items) => {
     if (!akun) {
-      requireLogin("Login untuk melanjutkan checkout", () => {
-        setCheckoutItems(items);
-        setHalaman("checkout");
-      });
+      setCheckoutItems(items);
+      requireLogin("Login untuk melanjutkan checkout");
       return;
     }
     setCheckoutItems(items);
@@ -224,7 +220,12 @@ export default function App() {
   };
 
   const handleChatDesainer = (item) => {
-    requireLogin("Login untuk chat dengan desainer", () => handleChatDesainerExec(item));
+    if (akun) {
+      handleChatDesainerExec(item);
+    } else {
+      setPendingItem(item);
+      requireLogin("Login atau daftar untuk chat dengan desainer");
+    }
   };
 
   const handleBukaChat = (pesanan) => {
@@ -512,7 +513,12 @@ Saya belum punya desain dan ingin konsultasi dengan tim desainer. Mohon bantuann
           onClose={() => setShowLogin(false)}
           onSuccess={() => {
             setShowLogin(false);
-            loginCallback?.fn?.();
+            if (pendingItem) {
+              handleChatDesainerExec(pendingItem);
+              setPendingItem(null);
+            } else if (checkoutItems.length > 0) {
+              setHalaman("checkout");
+            }
           }}
         />
       )}
