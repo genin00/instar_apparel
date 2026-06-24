@@ -66,19 +66,39 @@ const caraKerja = [
 const quotes = [
   {
     teks: "Pakaian bukan sekadar kain — ia adalah bahasa tanpa kata yang menceritakan siapa kamu.",
-    ikon: "✍️",
+    ikon: (
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+        <path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"
+          stroke="#C8392B" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+    ),
   },
   {
     teks: "Identitasmu terlalu unik untuk diwakilkan oleh desain orang lain. Buat milikmu sendiri.",
-    ikon: "🎨",
+    ikon: (
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="10" stroke="#C8392B" strokeWidth="1.8"/>
+        <path d="M12 8v4l3 3" stroke="#C8392B" strokeWidth="1.8" strokeLinecap="round"/>
+      </svg>
+    ),
   },
   {
     teks: "Satu kaos custom bisa menyatukan komunitas, merayakan momen, dan meninggalkan kenangan.",
-    ikon: "👕",
+    ikon: (
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+        <path d="M20.38 3.46L16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.57a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.57a2 2 0 0 0-1.34-2.23z"
+          stroke="#C8392B" strokeWidth="1.8" strokeLinejoin="round"/>
+      </svg>
+    ),
   },
   {
     teks: "Kreativitas adalah cara terbaik untuk memperkenalkan dirimu kepada dunia.",
-    ikon: "🌟",
+    ikon: (
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
+          stroke="#C8392B" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+    ),
   },
 ];
 
