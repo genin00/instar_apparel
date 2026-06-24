@@ -21,6 +21,7 @@ import { saveOrder, getOrders } from "./services/orderService.js";
 import Support       from "./pages/Support.jsx";
 import TulisReview   from "./pages/TulisReview.jsx";
 import Akun          from "./pages/Akun.jsx";
+import LoginPopup    from "./components/LoginPopup.jsx";
 import Chat          from "./pages/Chat.jsx";
 import DaftarChat    from "./pages/DaftarChat.jsx";
 
@@ -65,6 +66,9 @@ export default function App() {
   const [pesananFilter,  setPesananFilter]  = useState(null);
   const [chatPesanan,    setChatPesanan]    = useState(null);
   const [customStep,     setCustomStep]     = useState(0);
+  const [showLogin,      setShowLogin]      = useState(false);
+  const [loginPesan,     setLoginPesan]     = useState("");
+  const [loginCallback,  setLoginCallback]  = useState(null);
 
   useEffect(() => { save("instar_keranjang", keranjang);   }, [keranjang]);
 
@@ -158,8 +162,10 @@ export default function App() {
 
   const handleCheckout = (items) => {
     if (!akun) {
-      setTab("akun");
-      setHalaman(null);
+      requireLogin("Login untuk melanjutkan checkout", () => {
+        setCheckoutItems(items);
+        setHalaman("checkout");
+      });
       return;
     }
     setCheckoutItems(items);
@@ -187,7 +193,14 @@ export default function App() {
     setHalaman("pesanan");
   };
 
-  const handleChatDesainer = async (item) => {
+  const requireLogin = (pesan, callback) => {
+    if (akun) { callback(); return; }
+    setLoginPesan(pesan);
+    setLoginCallback(() => callback);
+    setShowLogin(true);
+  };
+
+  const handleChatDesainerExec = async (item) => {
     const orderId = "IA-" + Math.floor(100000 + Math.random() * 900000);
     const pesananBaru = {
       orderId,
@@ -208,6 +221,10 @@ export default function App() {
     setPesananList(prev => [pesananBaru, ...prev]);
     setChatPesanan(pesananBaru);
     setHalaman("chat");
+  };
+
+  const handleChatDesainer = (item) => {
+    requireLogin("Login untuk chat dengan desainer", () => handleChatDesainerExec(item));
   };
 
   const handleBukaChat = (pesanan) => {
@@ -489,6 +506,17 @@ Saya belum punya desain dan ingin konsultasi dengan tim desainer. Mohon bantuann
       )}
 
       </div>
+      {showLogin && (
+        <LoginPopup
+          pesan={loginPesan}
+          onClose={() => setShowLogin(false)}
+          onSuccess={() => {
+            setShowLogin(false);
+            loginCallback?.();
+          }}
+        />
+      )}
+
       <BottomNav
         aktif={tab}
         onChange={(t) => { setTab(t); setHalaman(null); }}
