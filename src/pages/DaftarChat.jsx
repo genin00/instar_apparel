@@ -14,7 +14,7 @@ const formatWaktu = (ts) => {
   return d.toLocaleDateString("id-ID", { day: "2-digit", month: "short" });
 };
 
-export default function DaftarChat({ pesananList = [], akun, onBack, onBukaChat }) {
+export default function DaftarChat({ pesananList = [], akun, onBack, onBukaChat, onLogin }) {
   const [daftarChat, setDaftarChat] = useState([]);
   const [loading,    setLoading]    = useState(true);
 
@@ -44,7 +44,19 @@ export default function DaftarChat({ pesananList = [], akun, onBack, onBukaChat 
           <div style={{ textAlign: "center", padding: "60px 20px" }}>
             <div style={{ fontSize: "40px", marginBottom: "12px" }}>🔐</div>
             <div style={{ fontWeight: "700", fontSize: "15px", color: "#374151", marginBottom: "6px" }}>Login Dulu</div>
-            <div style={{ fontSize: "13px", color: "#9CA3AF" }}>Login untuk bisa chat dengan desainer</div>
+            <div style={{ fontSize: "13px", color: "#9CA3AF", marginBottom: "24px" }}>Login untuk bisa chat dengan desainer</div>
+            <button
+              onClick={onLogin}
+              style={{
+                width: "100%", padding: "14px",
+                borderRadius: "12px", border: "none",
+                background: "#0A0A0A", color: "white",
+                fontWeight: "900", fontSize: "14px", cursor: "pointer",
+                marginBottom: "10px",
+              }}
+            >
+              Login / Daftar
+            </button>
           </div>
         ) : loading ? (
           <div style={{ textAlign: "center", padding: "40px", color: "#9CA3AF", fontSize: "13px" }}>Memuat...</div>

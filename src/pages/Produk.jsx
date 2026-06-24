@@ -9,7 +9,7 @@ import products from "../data/products.js";
 
 const kategori = ["Semua", "Lengan Pendek", "Lengan Panjang", "Rib"];
 
-export default function Produk({ onCustom, onWishlist, wishlist = [], keranjangCount = 0, onKeranjang }) {
+export default function Produk({ onCustom, onWishlist, wishlist = [], keranjangCount = 0, onKeranjang, onKonsultasi }) {
   const [aktifKategori, setAktifKategori] = useState("Semua");
   const [layout, setLayout]               = useState("grid");
   const [cari, setCari]                   = useState("");
@@ -140,10 +140,7 @@ export default function Produk({ onCustom, onWishlist, wishlist = [], keranjangC
             Tim desainer kami siap bantu wujudkan idemu.
           </div>
         </div>
-        <button onClick={() => {
-          const msg = encodeURIComponent("Halo Instar Apparel, saya ingin konsultasi desain custom.");
-          window.open(`https://wa.me/6281230220456?text=${msg}`, "_blank");
-        }} style={{ background: "#C8392B", color: "white", border: "none",
+        <button onClick={() => onKonsultasi && onKonsultasi()} style={{ background: "#C8392B", color: "white", border: "none",
           borderRadius: "10px", padding: "10px 14px", fontSize: "12px",
           fontWeight: "800", cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0 }}>
           💬 Konsultasi

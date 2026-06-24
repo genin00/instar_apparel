@@ -257,13 +257,25 @@ export default function App() {
   // ── SUB HALAMAN (tanpa BottomNav) ──
   if (halaman === "keranjang") {
     return (
-      <Keranjang
-        items={keranjang}
-        onHapus={handleHapusKeranjang}
-        onCheckout={handleCheckout}
-        onLanjutBelanja={() => setHalaman(null)}
-        onBack={() => setHalaman(null)}
-      />
+      <>
+        <Keranjang
+          items={keranjang}
+          onHapus={handleHapusKeranjang}
+          onCheckout={handleCheckout}
+          onLanjutBelanja={() => setHalaman(null)}
+          onBack={() => setHalaman(null)}
+        />
+        {showLogin && (
+          <LoginPopup
+            pesan={loginPesan}
+            onClose={() => { setShowLogin(false); setCheckoutItems([]); }}
+            onSuccess={() => {
+              setShowLogin(false);
+              if (checkoutItems.length > 0) setHalaman("checkout");
+            }}
+          />
+        )}
+      </>
     );
   }
 
@@ -337,6 +349,7 @@ export default function App() {
         akun={akun}
         onBack={() => setHalaman(null)}
         onBukaChat={handleBukaChat}
+        onLogin={() => { setHalaman(null); setTab("akun"); }}
       />
     );
   }
@@ -492,6 +505,7 @@ Saya belum punya desain dan ingin konsultasi dengan tim desainer. Mohon bantuann
           wishlist={wishlist}
           keranjangCount={keranjang.length}
           onKeranjang={() => setHalaman("keranjang")}
+          onKonsultasi={() => { if (akun) { setHalaman("daftar-chat"); } else { setHalaman("daftar-chat"); } }}
         />
       )}
 
@@ -499,7 +513,8 @@ Saya belum punya desain dan ingin konsultasi dengan tim desainer. Mohon bantuann
         <div style={{ background: "#F2F2F0", minHeight: "100vh", paddingBottom: "80px", overflowX: "hidden" }}>
           <Header halaman="karya" judul="Karya Instar"
             keranjangCount={keranjang.length}
-            onKeranjang={() => setHalaman("keranjang")} />
+            onKeranjang={() => setHalaman("keranjang")}
+          onKonsultasi={() => { if (akun) { setHalaman("daftar-chat"); } else { setHalaman("daftar-chat"); } }} />
           <div style={{ padding: "16px", boxSizing: "border-box", overflowX: "hidden" }}>
             <KaryaInstar onBuatSepertiIni={handleBuatSepertiIni} akun={akun} pesananList={pesananList} />
           </div>
