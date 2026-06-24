@@ -528,46 +528,7 @@ export default function Akun({ akun, profil, onProfilUpdate, pesananList = [], o
 
   const handleLogout = async () => {
     try { await logout(); onLogout(); } catch {}
-  };
-
-  const handleReset = async () => {
-    if (!email.trim()) { setError("Masukkan email kamu dulu"); return; }
-    setError(""); setInfo(""); setLoading(true);
-    try {
-      await resetPassword(email.trim());
-      setInfo("Link reset password sudah dikirim ke email kamu. Cek inbox atau folder spam.");
-      setResetMode(false);
-    } catch (e) {
-      setError(e.message || "Gagal mengirim email reset.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (resetMode) {
-    return (
-      <div style={{ background: "#F2F2F0", minHeight: "100vh", paddingBottom: "80px" }}>
-        <Header halaman="akun" judul="Akun" />
-        <div style={{ padding: "32px 20px 0", maxWidth: "480px", margin: "0 auto" }}>
-          <div style={{ textAlign: "center", marginBottom: "32px" }}>
-            <div style={{ width: "72px", height: "72px", borderRadius: "20px",
-              background: "#0A0A0A", display: "flex", alignItems: "center",
-              justifyContent: "center", margin: "0 auto 14px" }}>
-              <svg width="36" height="36" viewBox="0 0 24 24" fill="none">
-                <rect x="2" y="7" width="20" height="14" rx="2" stroke="white" strokeWidth="1.8"/>
-                <path d="M16 3H8a2 2 0 0 0-2 2v2h12V5a2 2 0 0 0-2-2z" stroke="white" strokeWidth="1.8"/>
-                <path d="M12 12v4M10 14h4" stroke="white" strokeWidth="1.8" strokeLinecap="round"/>
-              </svg>
-            </div>
-            <div style={{ fontWeight: "900", fontSize: "22px", color: "#0A0A0A" }}>Lupa Sandi</div>
-            <div style={{ fontSize: "13px", color: "#9CA3AF", marginTop: "4px", lineHeight: 1.5 }}>
-              Masukkan emailmu dan kami akan kirim link untuk reset password
-            </div>
-          </div>
-
-          <div style={{ background: "white", borderRadius: "16px", padding: "20px", marginBottom: "14px" }}>
-            <div style={{ fontWeight: "600", fontSize: "12px", color: "#374151", marginBottom: "6px" }}>Email</div>
-            <input value={email} onChange={e => { setEmail(e.target.value); setError(""); }}
+  };}
               placeholder="email@contoh.com" type="email"
               style={{ width: "100%", borderRadius: "10px", border: "1.5px solid #E5E7EB",
                 padding: "12px 14px", fontSize: "14px", outline: "none",
