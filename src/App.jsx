@@ -385,7 +385,7 @@ Saya belum punya desain dan ingin konsultasi dengan tim desainer. Mohon bantuann
             keranjangCount={keranjang.length}
             onKeranjang={() => setHalaman("keranjang")} />
           <div style={{ padding: "16px", boxSizing: "border-box", overflowX: "hidden" }}>
-            <KaryaInstar onBuatSepertiIni={handleBuatSepertiIni} />
+            <KaryaInstar onBuatSepertiIni={handleBuatSepertiIni} akun={akun} pesananList={pesananList} />
           </div>
         </div>
       )}
