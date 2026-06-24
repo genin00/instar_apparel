@@ -594,8 +594,8 @@ export default function CustomBuilder({ produk, onBack, onTambahKeranjang, desai
           <div>
             {!opsiDesain && (
               <div>
-                <div style={{ fontWeight:900, fontSize:"18px", marginBottom:"4px" }}>Punya Desain?</div>
-                <div style={{ ...S.sub, marginBottom:"16px" }}>Pilih cara kamu mau mendesain kaos ini</div>
+                <div style={{ fontWeight:900, fontSize:"22px", marginBottom:"6px", color:"#0A0A0A" }}>Punya Desain?</div>
+                <div style={{ fontSize:"13px", color:"#9CA3AF", marginBottom:"20px", lineHeight:1.5 }}>Pilih cara kamu mau mendesain kaos ini</div>
                 <div style={{ display:"flex", flexDirection:"column", gap:"10px" }}>
                   {[
                     { id:"upload", icon:"📁", bg:"#0A0A0A", judul:"Punya Desain Sendiri",
