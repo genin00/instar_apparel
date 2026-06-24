@@ -84,13 +84,13 @@ const testimoni = [
   },
 ];
 
-export default function Beranda({ onCustom, onWishlist, wishlist = [], onLihatSemua, onLihatKarya, onBuatSepertiIni }) {
+export default function Beranda({ onChat, onCustom, onWishlist, wishlist = [], onLihatSemua, onLihatKarya, onBuatSepertiIni }) {
   const [activeTestimoni, setActiveTestimoni] = useState(0);
 
   return (
     <div style={{ background: "#F2F2F0", minHeight: "100vh", paddingBottom: "80px" }}>
 
-      <Header halaman="beranda" />
+      <Header halaman="beranda" onChat={onChat} />
 
       {/* ── HERO SECTION ── */}
       <div style={{

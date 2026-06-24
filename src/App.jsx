@@ -21,6 +21,8 @@ import { saveOrder, getOrders } from "./services/orderService.js";
 import Support       from "./pages/Support.jsx";
 import TulisReview   from "./pages/TulisReview.jsx";
 import Akun          from "./pages/Akun.jsx";
+import Chat          from "./pages/Chat.jsx";
+import DaftarChat    from "./pages/DaftarChat.jsx";
 
 const load = (key, fallback) => {
   try {
@@ -61,6 +63,7 @@ export default function App() {
   const [checkoutItems,  setCheckoutItems]  = useState([]);
   const [reviewTarget,   setReviewTarget]   = useState(null);
   const [pesananFilter,  setPesananFilter]  = useState(null);
+  const [chatPesanan,    setChatPesanan]    = useState(null);
 
   useEffect(() => { save("instar_keranjang", keranjang);   }, [keranjang]);
   useEffect(() => { save("instar_wishlist",  wishlist);    }, [wishlist]);
@@ -236,6 +239,32 @@ export default function App() {
     );
   }
 
+  const handleBukaChat = (pesanan) => {
+    setChatPesanan(pesanan);
+    setHalaman("chat");
+  };
+
+  if (halaman === "daftar-chat") {
+    return (
+      <DaftarChat
+        pesananList={pesananList}
+        akun={akun}
+        onBack={() => setHalaman(null)}
+        onBukaChat={handleBukaChat}
+      />
+    );
+  }
+
+  if (halaman === "chat" && chatPesanan) {
+    return (
+      <Chat
+        pesanan={chatPesanan}
+        akun={akun}
+        onBack={() => setHalaman("daftar-chat")}
+      />
+    );
+  }
+
   if (halaman === "sukses") {
     const adaBrief = checkoutItems.length > 0
       ? false
@@ -366,6 +395,7 @@ Saya belum punya desain dan ingin konsultasi dengan tim desainer. Mohon bantuann
           onLihatSemua={() => setTab("produk")}
           onLihatKarya={() => setTab("karya")}
           onBuatSepertiIni={handleBuatSepertiIni}
+        onChat={() => setHalaman("daftar-chat")}
         />
       )}
 
