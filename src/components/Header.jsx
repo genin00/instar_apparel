@@ -25,8 +25,6 @@ export default function Header({
   onBack       = null,
   keranjangCount = 0,
   onKeranjang  = null,
-  onChat       = null,
-  chatCount    = 0,
 }) {
 
   // Halaman yang pakai header hitam penuh (brand header)
@@ -123,30 +121,6 @@ export default function Header({
         {/* Spacer */}
         {!judul && <div style={{ flex: 1 }} />}
 
-        {/* Icon chat — hanya di beranda */}
-        {halaman === "beranda" && onChat && (
-          <button onClick={onChat} style={{
-            background: "none", border: "none", cursor: "pointer",
-            padding: "4px", position: "relative",
-            display: "flex", alignItems: "center", flexShrink: 0,
-          }}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
-                stroke="#FFFFFF" strokeWidth="1.8" strokeLinejoin="round" fill="none"/>
-            </svg>
-            {chatCount > 0 && (
-              <div style={{
-                position: "absolute", top: "0px", right: "0px",
-                background: "#10B981", color: "white",
-                fontSize: "9px", fontWeight: "800",
-                width: "16px", height: "16px", borderRadius: "50%",
-                display: "flex", alignItems: "center", justifyContent: "center",
-              }}>
-                {chatCount > 9 ? "9+" : chatCount}
-              </div>
-            )}
-          </button>
-        )}
 
         {/* Tagline — hanya di beranda */}
         {halaman === "beranda" && !isSubPage && (

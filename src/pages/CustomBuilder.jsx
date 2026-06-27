@@ -452,15 +452,13 @@ function ColorPicker({ warna, setWarna }) {
 }
 
 // ── MAIN COMPONENT ───────────────────────────────────────────
-export default function CustomBuilder({ produk, onBack, onTambahKeranjang, onChatDesainer, onStepChange, desainAwal }) {
+export default function CustomBuilder({ produk, onBack, onTambahKeranjang, onStepChange, desainAwal, onChatDesainer }) {
   const [step,         setStep]         = useState(0);
   const [warna,        setWarna]        = useState("#FFFFFF");
-  const [opsiDesain,   setOpsiDesain]   = useState(desainAwal ? "upload" : null);
+  const [opsiDesain,   setOpsiDesain]   = useState(null);
   const [side,         setSide]         = useState("front");
   const [activeZona,   setActiveZona]   = useState("depan");
-  const [uploads,      setUploads]      = useState(() =>
-    desainAwal ? { depan: desainAwal.gambarDesain } : {}
-  );
+  const [uploads,      setUploads]      = useState({});
   const [posisiDesain, setPosisiDesain] = useState({});
   const [catatan,      setCatatan]      = useState({});
   const [catatanInput, setCatatanInput] = useState("");
@@ -514,17 +512,29 @@ export default function CustomBuilder({ produk, onBack, onTambahKeranjang, onCha
   }, [step]);
 
   const handleTambahKeranjang = () => {
+    if (opsiDesain === "brief") {
+      onChatDesainer?.({
+        produk,
+        warna,
+        warnaLabel: warnaObj.nama,
+        briefKat,
+        briefTeks,
+        kodeDesain,
+        modeUkuran,
+        satuanSize,
+        satuanQty,
+        massalQty,
+        totalQty,
+      });
+      return;
+    }
 
     const item = {
       id: Date.now(), produk, warna, warnaLabel: warnaObj.nama,
       opsiDesain, uploads, posisiDesain, catatan, briefKat, briefTeks, kodeDesain,
       modeUkuran, satuanSize, satuanQty, massalQty, totalQty, totalHarga,
     };
-    if (opsiDesain === "brief" && onChatDesainer) {
-      onChatDesainer(item);
-    } else {
-      onTambahKeranjang(item);
-    }
+    onTambahKeranjang(item);
   };
 
   const canNext = () => {

@@ -102,13 +102,13 @@ const quotes = [
   },
 ];
 
-export default function Beranda({ onChat, onCustom, onWishlist, wishlist = [], onLihatSemua, onLihatKarya, onBuatSepertiIni }) {
+export default function Beranda({ onCustom, onWishlist, wishlist = [], onLihatSemua, onLihatKarya, onBuatSepertiIni }) {
   const [activeQuote, setActiveQuote] = useState(0);
 
   return (
     <div style={{ background: "#F2F2F0", minHeight: "100vh", paddingBottom: "80px" }}>
 
-      <Header halaman="beranda" onChat={onChat} />
+      <Header halaman="beranda" />
 
       {/* ── HERO SECTION ── */}
       <div style={{
