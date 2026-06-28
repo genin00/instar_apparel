@@ -8,7 +8,7 @@
 
 import { useState, useRef, useCallback, useEffect } from "react";
 import Header from "../components/Header.jsx";
-import { warnaKaos, ukuranTersedia, kategoriTemplate } from "../data/products.js";
+import { warnaKaos, ukuranTersedia, tambahanUkuran, kategoriTemplate } from "../data/products.js";
 import config from "../config.js";
 
 const rp = (n) => "Rp " + n.toLocaleString("id-ID");
@@ -474,11 +474,17 @@ export default function CustomBuilder({ produk, onBack, onTambahKeranjang, onSte
 
   const warnaObj    = warnaKaos.find(w => w.hex === warna) || { nama: "Kustom" };
   const uploadCount = Object.values(uploads).filter(Boolean).length;
-  const biayaDesain = uploadCount * config.harga.biayaDesainPerArea;
+  const biayaTambahan = opsiDesain === "brief" ? config.harga.biayaBrief : config.harga.biayaSablon;
   const totalQty    = modeUkuran === "satuan"
     ? satuanQty
     : Object.values(massalQty).reduce((a,b) => a+(parseInt(b)||0), 0);
-  const totalHarga  = (produk.harga + biayaDesain) * totalQty;
+  const totalHarga  = modeUkuran === "massal"
+    ? Object.entries(massalQty).reduce((total, [sz, qty]) => {
+        const q = parseInt(qty) || 0;
+        if (q <= 0) return total;
+        return total + (produk.harga + (tambahanUkuran[sz] || 0) + biayaTambahan) * q;
+      }, 0)
+    : (produk.harga + (tambahanUkuran[satuanSize] || 0) + biayaTambahan) * satuanQty;
 
   const handleZonaClick = (zona) => {
     setActiveZona(zona);
@@ -525,6 +531,7 @@ export default function CustomBuilder({ produk, onBack, onTambahKeranjang, onSte
         satuanQty,
         massalQty,
         totalQty,
+        totalHarga,
       });
       return;
     }
@@ -766,7 +773,7 @@ export default function CustomBuilder({ produk, onBack, onTambahKeranjang, onSte
                 {uploadCount > 0 && (
                   <div style={{ background:"#ECFDF5", borderRadius:"10px",
                     padding:"10px 12px", fontSize:"12px", color:"#065F46", fontWeight:"600" }}>
-                    ✅ {uploadCount} area · Biaya desain: {rp(biayaDesain)}
+                    ✅ {uploadCount} area desain terupload
                   </div>
                 )}
               </div>
@@ -963,9 +970,9 @@ export default function CustomBuilder({ produk, onBack, onTambahKeranjang, onSte
                 <div style={{ display:"flex",justifyContent:"space-between",fontSize:"13px",color:"#9CA3AF",marginBottom:"6px" }}>
                   <span>Harga kaos</span><span>{rp(produk.harga)} × {totalQty}</span>
                 </div>
-                {biayaDesain > 0 && (
+                {biayaTambahan > 0 && (
                   <div style={{ display:"flex",justifyContent:"space-between",fontSize:"13px",color:"#9CA3AF",marginBottom:"6px" }}>
-                    <span>Biaya desain ({uploadCount} area)</span><span>{rp(biayaDesain)} × {totalQty}</span>
+                    <span>Biaya sablon & press</span><span>{rp(biayaTambahan)} × {totalQty}</span>
                   </div>
                 )}
                 <div style={{ display:"flex",justifyContent:"space-between",fontWeight:"900",fontSize:"18px",borderTop:"1px solid #ffffff15",paddingTop:"10px",marginTop:"6px" }}>
@@ -1017,9 +1024,9 @@ export default function CustomBuilder({ produk, onBack, onTambahKeranjang, onSte
                 <div style={{ display:"flex",justifyContent:"space-between",fontSize:"13px",color:"#9CA3AF",marginBottom:"5px" }}>
                   <span>Harga kaos</span><span>{rp(produk.harga)} × {totalQty}</span>
                 </div>
-                {biayaDesain > 0 && (
+                {biayaTambahan > 0 && (
                   <div style={{ display:"flex",justifyContent:"space-between",fontSize:"13px",color:"#9CA3AF",marginBottom:"5px" }}>
-                    <span>Biaya desain</span><span>{rp(biayaDesain)} × {totalQty}</span>
+                    <span>Biaya sablon & press</span><span>{rp(biayaTambahan)} × {totalQty}</span>
                   </div>
                 )}
                 <div style={{ display:"flex",justifyContent:"space-between",fontWeight:"900",fontSize:"17px",borderTop:"1px solid #ffffff15",paddingTop:"10px",marginTop:"6px" }}>

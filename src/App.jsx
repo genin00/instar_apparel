@@ -146,7 +146,7 @@ export default function App() {
   useEffect(() => {
     if (!akun) { setPesananList([]); return; }
     getOrders(akun.id).then(data => {
-      if (data && data.length > 0) setPesananList(data);
+      setPesananList(data || []);
     }).catch(() => {});
   }, [akun]);
 
@@ -385,7 +385,7 @@ export default function App() {
     try {
       const { getOrders } = await import("./services/orderService.js");
       const data = await getOrders(akun.id);
-      if (data && data.length > 0) setPesananList(data);
+      setPesananList(data || []);
     } catch(e) { console.error(e); }
   };
 

@@ -45,9 +45,18 @@ export default function ChatCenter({ akun, pesananList = [], onOpenRoom, onBack,
         if (briefContext.briefTeks.belakang) {
           lines.push("\u2022 Desain belakang: " + briefContext.briefTeks.belakang);
         }
-        lines.push(
-          "\u2022 Ukuran: " + briefContext.satuanSize + " x " + briefContext.satuanQty + " pcs"
-        );
+
+        if (briefContext.modeUkuran === "massal") {
+          const detailUkuran = Object.entries(briefContext.massalQty || {})
+            .filter(([_, qty]) => parseInt(qty) > 0)
+            .map(([sz, qty]) => sz + ": " + qty + " pcs")
+            .join(", ");
+          lines.push("\u2022 Ukuran: " + detailUkuran);
+          lines.push("\u2022 Total: " + briefContext.totalQty + " pcs");
+        } else {
+          lines.push("\u2022 Ukuran: " + briefContext.satuanSize + " x " + briefContext.satuanQty + " pcs");
+        }
+
         const pesanAwal = lines.join("\n");
 
         await sendMessage({

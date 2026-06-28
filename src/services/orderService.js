@@ -58,7 +58,7 @@ export const saveOrder = async (order) => {
         customer_id:       order.customerId || null,
       }),
     });
-  } catch {}
+  } catch(e) { alert("saveOrder ERROR: " + e.message); }
   return order;
 };
 
@@ -69,7 +69,7 @@ export const updateOrderStatus = async (orderId, status) => {
       headers: { ...headers, "Prefer": "return=minimal" },
       body: JSON.stringify({ status }),
     });
-  } catch {}
+  } catch(e) { alert("saveOrder ERROR: " + e.message); }
 };
 
 export const deleteOrder = async (orderId) => {
@@ -78,5 +78,5 @@ export const deleteOrder = async (orderId) => {
       method: "DELETE",
       headers,
     });
-  } catch {}
+  } catch(e) { alert("saveOrder ERROR: " + e.message); }
 };

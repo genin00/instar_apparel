@@ -464,7 +464,7 @@ function PengembalianModal({ pesanan, onClose, onSelesai }) {
   );
 }
 
-export default function Pesanan({ pesananList = [], filterStatus = null, onBack, onRefresh }) {
+export default function Pesanan({ pesananList = [], filterStatus = null, onBack, onRefresh, onBeriUlasan }) {
   const [tab, setTab]         = useState("semua");
   const [rincian, setRincian] = useState(null);
   const [modalTerima,       setModalTerima]       = useState(null);

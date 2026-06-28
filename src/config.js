@@ -49,7 +49,8 @@ const config = {
     kaosLenganPendek:   95000,
     kaosLenganPanjang:  145000,
     kaosRib:            120000,
-    biayaDesainPerArea: 25000,
+    biayaSablon: 5000,
+    biayaBrief:  10000,
   },
 
   // ── PENGIRIMAN ─────────────────────────────────────────

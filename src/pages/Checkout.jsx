@@ -119,7 +119,7 @@ const cekVoucher = (kode, subtotal) => {
   return v || null;
 };
 
-export default function Checkout({ items = [], onBack, onSelesai }) {
+export default function Checkout({ items = [], onBack, onSelesai, akun }) {
   const [nama,          setNama]          = useState("");
   const [noWA,          setNoWA]          = useState("");
   const [alamat,        setAlamat]        = useState("");
@@ -181,6 +181,7 @@ export default function Checkout({ items = [], onBack, onSelesai }) {
       ekspedisi,
       voucher: voucher?.kode || null,
       catatanAdmin,
+      customerId: akun?.id || null,
     };
 
     await saveOrder(pesananBaru);
