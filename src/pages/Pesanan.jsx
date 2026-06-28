@@ -1,14 +1,11 @@
 // ═══════════════════════════════════════════════════════════
-//  INSTAR APPAREL — PESANAN
-//  Riwayat pesanan + cek status via WA
+//  INSTAR APPAREL — PESANAN (Tokopedia-style)
 // ═══════════════════════════════════════════════════════════
 
 import { useState } from "react";
-import Header from "../components/Header.jsx";
 import config from "../config.js";
-import { sudahReview } from "../services/reviewService.js";
 
-const rp = (n) => "Rp " + n.toLocaleString("id-ID");
+const rp = (n) => "Rp " + (n || 0).toLocaleString("id-ID");
 
 function getShirtFilter(hex) {
   if (!hex || hex === "#FFFFFF" || hex === "#ffffff") return "none";
@@ -30,270 +27,348 @@ function getShirtFilter(hex) {
   return presets[hex] || "brightness(0.5) sepia(1) saturate(3)";
 }
 
-const STATUS_FLOW = [
-  { id: "diterima",   label: "Pesanan Diterima",       icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 0 2-2h2a2 2 0 0 0 2 2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg> },
-  { id: "konfirmasi", label: "Konfirmasi Pembayaran",  icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="2" y="5" width="20" height="14" rx="2" stroke="currentColor" strokeWidth="1.8"/><path d="M2 10h20" stroke="currentColor" strokeWidth="1.8"/></svg> },
-  { id: "desain",     label: "Proses Desain",          icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg> },
-  { id: "produksi",   label: "Produksi",               icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M20.38 3.46L16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.57a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.57a2 2 0 0 0-1.34-2.23z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"/></svg> },
-  { id: "qc",         label: "Quality Check",          icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="8" stroke="currentColor" strokeWidth="1.8"/><path d="M21 21l-4.35-4.35M8 11l2 2 4-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg> },
-  { id: "selesai",    label: "Selesai / Siap Diambil", icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/><path d="M22 4L12 14.01l-3-3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg> },
+const TABS = [
+  { id: "semua",    label: "Semua" },
+  { id: "diterima", label: "Belum Bayar" },
+  { id: "desain",   label: "Desain" },
+  { id: "produksi", label: "Produksi" },
+  { id: "dikirim",  label: "Dikirim" },
+  { id: "selesai",  label: "Selesai" },
 ];
 
-function StatusBadge({ status }) {
-  const colors = {
-    diterima:   { bg: "#FEF9C3", text: "#854D0E" },
-    konfirmasi: { bg: "#FEF3C7", text: "#92400E" },
-    desain:     { bg: "#EFF6FF", text: "#1D4ED8" },
-    produksi:   { bg: "#F0FDF4", text: "#166534" },
-    qc:         { bg: "#F5F3FF", text: "#6D28D9" },
-    selesai:    { bg: "#ECFDF5", text: "#065F46" },
-  };
-  const c = colors[status] || colors.diterima;
-  const s = STATUS_FLOW.find(s => s.id === status);
-  return (
-    <div style={{
-      display: "inline-flex", alignItems: "center", gap: "4px",
-      background: c.bg, color: c.text,
-      padding: "3px 10px", borderRadius: "20px",
-      fontSize: "11px", fontWeight: "700",
-    }}>
-      {s?.icon} {s?.label}
-    </div>
-  );
-}
+const STATUS_LABEL = {
+  diterima:   "Belum Bayar",
+  konfirmasi: "Konfirmasi",
+  desain:     "Proses Desain",
+  produksi:   "Produksi",
+  qc:         "Quality Check",
+  dikirim:    "Dikirim",
+  selesai:    "Selesai",
+};
 
-function PesananCard({ pesanan, onBeriUlasan }) {
-  const [expand, setExpand] = useState(false);
+const STATUS_COLOR = {
+  diterima:   { bg: "#FEF9C3", text: "#854D0E" },
+  konfirmasi: { bg: "#FEF3C7", text: "#92400E" },
+  desain:     { bg: "#EFF6FF", text: "#1D4ED8" },
+  produksi:   { bg: "#F0FDF4", text: "#166534" },
+  qc:         { bg: "#F5F3FF", text: "#6D28D9" },
+  dikirim:    { bg: "#E0F2FE", text: "#0369A1" },
+  selesai:    { bg: "#ECFDF5", text: "#065F46" },
+};
+
+const STATUS_FLOW = [
+  { id: "diterima",   label: "Pesanan Diterima" },
+  { id: "konfirmasi", label: "Konfirmasi Pembayaran" },
+  { id: "desain",     label: "Proses Desain" },
+  { id: "produksi",   label: "Produksi" },
+  { id: "qc",         label: "Quality Check" },
+  { id: "dikirim",    label: "Dikirim" },
+  { id: "selesai",    label: "Selesai" },
+];
+
+function RincianPesanan({ pesanan, onBack }) {
   const statusIdx = STATUS_FLOW.findIndex(s => s.id === pesanan.status);
+  const sc = STATUS_COLOR[pesanan.status] || STATUS_COLOR.diterima;
 
   return (
-    <div style={{
-      background: "white", borderRadius: "14px",
-      marginBottom: "10px", overflow: "hidden",
-    }}>
-      {/* Header card */}
-      <div
-        onClick={() => setExpand(!expand)}
-        style={{
-          padding: "14px 16px", cursor: "pointer",
-          display: "flex", alignItems: "flex-start",
-          justifyContent: "space-between", gap: "10px",
-        }}
-      >
-        <div style={{ flex: 1 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "6px" }}>
-            <div style={{
-              background: "#0A0A0A", color: "white",
-              fontSize: "11px", fontWeight: "800",
-              padding: "3px 10px", borderRadius: "20px",
-              letterSpacing: "0.5px",
-            }}>
-              {pesanan.orderId}
-            </div>
-            <div style={{ fontSize: "11px", color: "#9CA3AF" }}>
-              {pesanan.tanggal}
-            </div>
-          </div>
-          <div style={{ fontWeight: "800", fontSize: "14px", marginBottom: "4px" }}>
-            {pesanan.items?.map(i => i.produk.nama).join(", ")}
-          </div>
-          <div style={{ fontSize: "12px", color: "#9CA3AF", marginBottom: "6px" }}>
-            {pesanan.totalQty} pcs · {rp(pesanan.totalHarga)}
-          </div>
-          <StatusBadge status={pesanan.status} />
-        </div>
-        <div style={{
-          color: "#9CA3AF", fontSize: "18px",
-          transform: expand ? "rotate(180deg)" : "rotate(0deg)",
-          transition: "transform 0.2s",
-        }}>
-          ⌄
-        </div>
+    <div style={{ background: "#F2F2F0", minHeight: "100vh", paddingBottom: "80px" }}>
+      <div style={{
+        background: "white", padding: "14px 16px",
+        display: "flex", alignItems: "center", gap: "12px",
+        borderBottom: "1px solid #E5E7EB", position: "sticky", top: 0, zIndex: 10,
+      }}>
+        <button onClick={onBack} style={{ background: "none", border: "none", cursor: "pointer", padding: "4px" }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M15 18L9 12L15 6" stroke="#0A0A0A" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </button>
+        <div style={{ fontWeight: "800", fontSize: "16px", color: "#0A0A0A" }}>Rincian Pesanan</div>
       </div>
 
-      {/* Detail expand */}
-      {expand && (
-        <div style={{ borderTop: "1px solid #F2F2F0", padding: "14px 16px" }}>
+      <div style={{ padding: "14px 16px" }}>
 
-          {/* Timeline status */}
-          <div style={{ marginBottom: "16px" }}>
-            <div style={{
-              fontSize: "10px", fontWeight: "700",
-              color: "#9CA3AF", letterSpacing: "1.5px",
-              marginBottom: "12px",
-            }}>
-              STATUS PESANAN
+        <div style={{
+          background: sc.bg, borderRadius: "14px",
+          padding: "14px 16px", marginBottom: "12px",
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+        }}>
+          <div>
+            <div style={{ fontSize: "11px", color: sc.text, fontWeight: "700", marginBottom: "2px" }}>STATUS PESANAN</div>
+            <div style={{ fontSize: "15px", fontWeight: "900", color: sc.text }}>
+              {STATUS_LABEL[pesanan.status] || pesanan.status}
             </div>
-            {STATUS_FLOW.map((s, i) => {
-              const done   = i < statusIdx;
-              const active = i === statusIdx;
-              return (
-                <div key={s.id} style={{ display: "flex", gap: "12px" }}>
-                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                    <div style={{
-                      width: "24px", height: "24px", borderRadius: "50%",
-                      background: done ? "#0A0A0A" : active ? "#C8392B" : "#E5E7EB",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      fontSize: done ? "11px" : "12px",
-                      color: done || active ? "white" : "#9CA3AF",
-                      fontWeight: "800", flexShrink: 0,
-                    }}>
-                      {done ? "✓" : s.icon}
-                    </div>
-                    {i < STATUS_FLOW.length - 1 && (
-                      <div style={{
-                        width: "2px", flex: 1, minHeight: "20px",
-                        background: done ? "#0A0A0A" : "#E5E7EB",
-                      }} />
-                    )}
-                  </div>
-                  <div style={{ paddingBottom: "12px" }}>
-                    <div style={{
-                      fontWeight: active ? "800" : done ? "600" : "400",
-                      fontSize: "13px",
-                      color: active ? "#C8392B" : done ? "#0A0A0A" : "#9CA3AF",
-                    }}>
-                      {s.label}
-                    </div>
-                    {active && (
-                      <div style={{ fontSize: "11px", color: "#C8392B", marginTop: "2px" }}>
-                        Sedang diproses...
-                      </div>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
           </div>
+          <div style={{ fontSize: "28px" }}>
+            {pesanan.status === "selesai" ? "✅" : pesanan.status === "dikirim" ? "🚚" : pesanan.status === "produksi" ? "🏭" : pesanan.status === "desain" ? "🎨" : "📦"}
+          </div>
+        </div>
 
-          {/* Items */}
+        <div style={{ background: "white", borderRadius: "14px", padding: "16px", marginBottom: "12px" }}>
+          <div style={{ fontSize: "11px", fontWeight: "700", color: "#9CA3AF", letterSpacing: "1.5px", marginBottom: "14px" }}>
+            TRACKING PESANAN
+          </div>
+          {STATUS_FLOW.map((s, i) => {
+            const done   = i < statusIdx;
+            const active = i === statusIdx;
+            return (
+              <div key={s.id} style={{ display: "flex", gap: "12px" }}>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                  <div style={{
+                    width: "22px", height: "22px", borderRadius: "50%", flexShrink: 0,
+                    background: done ? "#0A0A0A" : active ? "#C8392B" : "#E5E7EB",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontSize: "10px", color: done || active ? "white" : "#9CA3AF", fontWeight: "800",
+                  }}>
+                    {done ? "✓" : i + 1}
+                  </div>
+                  {i < STATUS_FLOW.length - 1 && (
+                    <div style={{ width: "2px", flex: 1, minHeight: "18px", background: done ? "#0A0A0A" : "#E5E7EB" }} />
+                  )}
+                </div>
+                <div style={{ paddingBottom: "14px", flex: 1 }}>
+                  <div style={{
+                    fontWeight: active ? "800" : done ? "600" : "400",
+                    fontSize: "13px",
+                    color: active ? "#C8392B" : done ? "#0A0A0A" : "#9CA3AF",
+                  }}>
+                    {s.label}
+                  </div>
+                  {active && (
+                    <div style={{ fontSize: "11px", color: "#C8392B", marginTop: "2px" }}>Sedang diproses...</div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <div style={{ background: "white", borderRadius: "14px", padding: "16px", marginBottom: "12px" }}>
+          <div style={{ fontSize: "11px", fontWeight: "700", color: "#9CA3AF", letterSpacing: "1.5px", marginBottom: "14px" }}>
+            INFO PESANAN
+          </div>
+          {[
+            { label: "No. Pesanan", value: pesanan.orderId },
+            { label: "Tanggal", value: pesanan.tanggal },
+            { label: "Total Item", value: pesanan.totalQty + " pcs" },
+            { label: "Metode Bayar", value: pesanan.metodePembayaran || "-" },
+          ].map(row => (
+            <div key={row.label} style={{ display: "flex", justifyContent: "space-between", marginBottom: "10px" }}>
+              <div style={{ fontSize: "13px", color: "#6B7280" }}>{row.label}</div>
+              <div style={{ fontSize: "13px", fontWeight: "700", color: "#0A0A0A" }}>{row.value}</div>
+            </div>
+          ))}
+        </div>
+
+        <div style={{ background: "white", borderRadius: "14px", padding: "16px", marginBottom: "12px" }}>
+          <div style={{ fontSize: "11px", fontWeight: "700", color: "#9CA3AF", letterSpacing: "1.5px", marginBottom: "14px" }}>
+            PRODUK
+          </div>
           {pesanan.items?.map((item, idx) => (
             <div key={idx} style={{
-              display: "flex", gap: "10px",
-              padding: "10px 0",
-              borderTop: "1px solid #F2F2F0",
+              display: "flex", gap: "12px",
+              paddingBottom: idx < pesanan.items.length - 1 ? "12px" : "0",
+              borderBottom: idx < pesanan.items.length - 1 ? "1px solid #F2F2F0" : "none",
+              marginBottom: idx < pesanan.items.length - 1 ? "12px" : "0",
             }}>
-              {/* Preview mockup kaos berwarna */}
-              <div style={{ width:"56px", flexShrink:0, background:"#F8FAFC",
-                borderRadius:"10px", padding:"4px", border:"1px solid #E5E7EB" }}>
+              <div style={{ width: "60px", height: "60px", flexShrink: 0, background: "#F8FAFC", borderRadius: "10px", padding: "4px", border: "1px solid #E5E7EB" }}>
                 <img
                   src={item.produk?.id === "lengan-panjang" ? "/mockup-panjang.png" : item.produk?.id === "rib" ? "/mockup-rib.png" : "/mockup-pendek.png"}
                   alt="kaos"
-                  style={{ width:"100%", display:"block",
-                    filter: getShirtFilter(item.warna) }}
+                  style={{ width: "100%", display: "block", filter: getShirtFilter(item.warna) }}
                 />
               </div>
               <div style={{ flex: 1 }}>
-                <div style={{ fontWeight: "700", fontSize: "13px" }}>
-                  {item.produk.nama}
+                <div style={{ fontWeight: "700", fontSize: "13px", color: "#0A0A0A", marginBottom: "4px" }}>
+                  {item.produk?.nama || item.nama || "Kaos Custom"}
                 </div>
-                <div style={{ display:"flex", alignItems:"center", gap:"4px", marginTop:"2px" }}>
-                  <div style={{ width:"10px", height:"10px", borderRadius:"50%",
-                    background: item.warna, border:"1px solid #E5E7EB", flexShrink:0 }}/>
-                  <div style={{ fontSize: "11px", color: "#9CA3AF" }}>
-                    {item.warnaLabel} · {item.modeUkuran === "satuan"
-                      ? `${item.satuanSize} × ${item.satuanQty} pcs`
-                      : `Massal · ${item.totalQty} pcs`}
-                  </div>
+                <div style={{ fontSize: "12px", color: "#9CA3AF", marginBottom: "4px" }}>
+                  {item.warnaLabel || "-"} · {item.modeUkuran === "satuan" ? item.satuanSize + " x " + item.satuanQty + " pcs" : "Massal · " + item.totalQty + " pcs"}
                 </div>
-                {item.opsiDesain === "brief" && (
-                  <div style={{ marginTop:"4px", background:"#EFF6FF", borderRadius:"6px",
-                    padding:"3px 8px", fontSize:"10px", color:"#1D4ED8", fontWeight:"700",
-                    display:"inline-flex", alignItems:"center", gap:"4px" }}>
-                    🎨 Menunggu Desainer
-                  </div>
-                )}
-                {item.opsiDesain === "upload" && (
-                  <div style={{ marginTop:"4px", background:"#F0FDF4", borderRadius:"6px",
-                    padding:"3px 8px", fontSize:"10px", color:"#065F46", fontWeight:"700",
-                    display:"inline-flex", alignItems:"center", gap:"4px" }}>
-                    ✓ Desain Siap
-                  </div>
-                )}
-                <div style={{ fontWeight: "700", fontSize: "12px", marginTop: "4px" }}>
+                <div style={{ fontWeight: "800", fontSize: "13px", color: "#0A0A0A" }}>
                   {rp(item.totalHarga)}
                 </div>
               </div>
             </div>
           ))}
-
-
         </div>
-      )}
+
+        <div style={{ background: "white", borderRadius: "14px", padding: "16px", marginBottom: "12px" }}>
+          <div style={{ fontSize: "11px", fontWeight: "700", color: "#9CA3AF", letterSpacing: "1.5px", marginBottom: "14px" }}>
+            RINCIAN PEMBAYARAN
+          </div>
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
+            <div style={{ fontSize: "13px", color: "#6B7280" }}>Subtotal Produk</div>
+            <div style={{ fontSize: "13px", color: "#0A0A0A" }}>{rp(pesanan.totalHarga)}</div>
+          </div>
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
+            <div style={{ fontSize: "13px", color: "#6B7280" }}>Ongkir</div>
+            <div style={{ fontSize: "13px", color: "#0A0A0A" }}>{rp(pesanan.ongkir || 0)}</div>
+          </div>
+          <div style={{ height: "1px", background: "#F2F2F0", margin: "10px 0" }} />
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <div style={{ fontSize: "14px", fontWeight: "800", color: "#0A0A0A" }}>Total</div>
+            <div style={{ fontSize: "14px", fontWeight: "900", color: "#C8392B" }}>{rp((pesanan.totalHarga || 0) + (pesanan.ongkir || 0))}</div>
+          </div>
+        </div>
+
+        <div style={{ background: "white", borderRadius: "14px", overflow: "hidden" }}>
+          <div style={{ fontSize: "11px", fontWeight: "700", color: "#9CA3AF", letterSpacing: "1.5px", padding: "16px 16px 10px" }}>
+            BUTUH BANTUAN?
+          </div>
+          <button
+            onClick={() => window.open("https://wa.me/" + config.whatsapp.bisnis, "_blank")}
+            style={{
+              width: "100%", display: "flex", alignItems: "center", gap: "12px",
+              background: "none", border: "none", borderTop: "1px solid #F2F2F0",
+              padding: "14px 16px", cursor: "pointer", textAlign: "left",
+            }}
+          >
+            <span style={{ fontSize: "20px" }}>💬</span>
+            <span style={{ flex: 1, fontSize: "13px", fontWeight: "600", color: "#0A0A0A" }}>Hubungi Customer Service</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <path d="M9 18L15 12L9 6" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round"/>
+            </svg>
+          </button>
+        </div>
+
+      </div>
     </div>
   );
 }
 
-export default function Pesanan({ pesananList = [], filterStatus = null, onBack, onBeriUlasan }) {
-  const [tab, setTab] = useState("aktif");
-
-  const aktif   = pesananList.filter(p => p.status !== "selesai");
-  const selesai = pesananList.filter(p => p.status === "selesai");
-  const tampil  = filterStatus
-    ? pesananList.filter(p => filterStatus.includes(p.status))
-    : tab === "aktif" ? aktif : selesai;
-
-  const handleCekStatus = (orderId) => {
-    const msg = encodeURIComponent(
-      `${config.waPesan.cekStatus}\n\nID Pesanan saya: *${orderId}*`
-    );
-    window.open(`https://wa.me/${config.whatsapp.bisnis}?text=${msg}`, "_blank");
-  };
+function PesananCard({ pesanan, onLihatRincian }) {
+  const sc = STATUS_COLOR[pesanan.status] || STATUS_COLOR.diterima;
+  const firstItem = pesanan.items?.[0];
 
   return (
-    <div style={{ background: "#F2F2F0", minHeight: "100vh", paddingBottom: "80px" }}>
-      <Header halaman="pesanan" judul="Pesanan Saya" onBack={onBack} />
-
-      {/* ── TAB ── */}
+    <div style={{ background: "white", borderRadius: "16px", marginBottom: "10px", overflow: "hidden" }}>
       <div style={{
-        background: "white", borderBottom: "1px solid #E5E7EB",
-        padding: "0 16px", display: "flex",
+        padding: "10px 14px",
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        borderBottom: "1px solid #F2F2F0",
       }}>
-        {[
-          { id: "aktif",   label: `Aktif (${aktif.length})` },
-          { id: "selesai", label: `Selesai (${selesai.length})` },
-        ].map(t => (
-          <button key={t.id} onClick={() => setTab(t.id)} style={{
-            flex: 1, padding: "13px 0", background: "none", border: "none",
-            borderBottom: tab === t.id ? "2.5px solid #0A0A0A" : "2.5px solid transparent",
-            fontWeight: tab === t.id ? "800" : "400",
-            fontSize: "13px",
-            color: tab === t.id ? "#0A0A0A" : "#9CA3AF",
-            cursor: "pointer",
-          }}>
-            {t.label}
-          </button>
-        ))}
+        <div style={{ fontWeight: "800", fontSize: "12px", color: "#0A0A0A" }}>Instar Apparel</div>
+        <div style={{ background: sc.bg, color: sc.text, fontSize: "11px", fontWeight: "700", padding: "3px 10px", borderRadius: "20px" }}>
+          {STATUS_LABEL[pesanan.status] || pesanan.status}
+        </div>
       </div>
 
-      {/* ── LIST ── */}
-      <div style={{ padding: "14px 16px 0" }}>
-        {tampil.length === 0 ? (
-          <div style={{
-            textAlign: "center", padding: "60px 20px",
-          }}>
-            <div style={{ fontSize: "48px", marginBottom: "12px" }}>
-              {tab === "aktif" ? "📦" : "✅"}
-            </div>
-            <div style={{
-              fontWeight: "700", fontSize: "15px",
-              color: "#374151", marginBottom: "6px",
+      <div style={{ padding: "12px 14px", display: "flex", gap: "12px", alignItems: "flex-start" }}>
+        <div style={{ width: "64px", height: "64px", flexShrink: 0, background: "#F8FAFC", borderRadius: "10px", padding: "4px", border: "1px solid #E5E7EB" }}>
+          <img
+            src={firstItem?.produk?.id === "lengan-panjang" ? "/mockup-panjang.png" : firstItem?.produk?.id === "rib" ? "/mockup-rib.png" : "/mockup-pendek.png"}
+            alt="kaos"
+            style={{ width: "100%", display: "block", filter: getShirtFilter(firstItem?.warna) }}
+          />
+        </div>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontWeight: "700", fontSize: "13px", color: "#0A0A0A", marginBottom: "2px" }}>
+            {firstItem?.produk?.nama || firstItem?.nama || "Kaos Custom"}
+          </div>
+          <div style={{ fontSize: "12px", color: "#9CA3AF", marginBottom: "4px" }}>
+            {firstItem?.warnaLabel || "-"} · x{pesanan.totalQty}
+          </div>
+          {pesanan.items?.length > 1 && (
+            <div style={{ fontSize: "11px", color: "#9CA3AF" }}>+{pesanan.items.length - 1} produk lainnya</div>
+          )}
+          <div style={{ fontWeight: "800", fontSize: "13px", color: "#0A0A0A", marginTop: "4px" }}>
+            {rp(pesanan.totalHarga)}
+          </div>
+        </div>
+      </div>
+
+      <div style={{ padding: "8px 14px", borderTop: "1px solid #F2F2F0", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div style={{ fontSize: "12px", color: "#6B7280" }}>Total Pesanan</div>
+        <div style={{ fontWeight: "900", fontSize: "14px", color: "#0A0A0A" }}>{rp(pesanan.totalHarga)}</div>
+      </div>
+
+      <div style={{ padding: "10px 14px", borderTop: "1px solid #F2F2F0", display: "flex", gap: "8px", justifyContent: "flex-end" }}>
+        <button
+          onClick={() => onLihatRincian(pesanan)}
+          style={{ background: "none", border: "1.5px solid #E5E7EB", borderRadius: "10px", padding: "8px 16px", fontSize: "12px", fontWeight: "700", color: "#374151", cursor: "pointer" }}
+        >
+          Lihat Detail
+        </button>
+        {pesanan.status === "dikirim" && (
+          <button
+            onClick={() => window.open("https://wa.me/" + config.whatsapp.bisnis + "?text=" + encodeURIComponent("Halo, saya ingin lacak pesanan #" + pesanan.orderId), "_blank")}
+            style={{ background: "#0A0A0A", border: "none", borderRadius: "10px", padding: "8px 16px", fontSize: "12px", fontWeight: "700", color: "white", cursor: "pointer" }}
+          >
+            Lacak
+          </button>
+        )}
+        {pesanan.status === "selesai" && (
+          <button style={{ background: "#C8392B", border: "none", borderRadius: "10px", padding: "8px 16px", fontSize: "12px", fontWeight: "700", color: "white", cursor: "pointer" }}>
+            Beri Ulasan
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export default function Pesanan({ pesananList = [], filterStatus = null, onBack }) {
+  const [tab, setTab]         = useState("semua");
+  const [rincian, setRincian] = useState(null);
+
+  if (rincian) {
+    return <RincianPesanan pesanan={rincian} onBack={() => setRincian(null)} />;
+  }
+
+  const tampil = tab === "semua"
+    ? pesananList
+    : tab === "diterima" ? pesananList.filter(p => ["diterima","konfirmasi"].includes(p.status))
+    : tab === "produksi" ? pesananList.filter(p => ["produksi","qc"].includes(p.status))
+    : pesananList.filter(p => p.status === tab);
+
+  return (
+    <div style={{ background: "#F2F2F0", minHeight: "100vh" }}>
+
+      <div style={{
+        background: "white", padding: "14px 16px",
+        display: "flex", alignItems: "center", gap: "12px",
+        borderBottom: "1px solid #E5E7EB", position: "sticky", top: 0, zIndex: 10,
+      }}>
+        <button onClick={onBack} style={{ background: "none", border: "none", cursor: "pointer", padding: "4px" }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M15 18L9 12L15 6" stroke="#0A0A0A" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </button>
+        <div style={{ fontWeight: "800", fontSize: "16px", color: "#0A0A0A" }}>Pesanan Saya</div>
+      </div>
+
+      <div style={{ background: "white", borderBottom: "1px solid #E5E7EB", display: "flex", overflowX: "auto", padding: "0 8px", scrollbarWidth: "none" }}>
+        {TABS.map(t => {
+          const count = t.id === "semua" ? pesananList.length
+            : t.id === "diterima" ? pesananList.filter(p => ["diterima","konfirmasi"].includes(p.status)).length
+            : t.id === "produksi" ? pesananList.filter(p => ["produksi","qc"].includes(p.status)).length
+            : pesananList.filter(p => p.status === t.id).length;
+          return (
+            <button key={t.id} onClick={() => setTab(t.id)} style={{
+              flexShrink: 0, padding: "12px 14px",
+              background: "none", border: "none",
+              borderBottom: tab === t.id ? "2.5px solid #C8392B" : "2.5px solid transparent",
+              fontWeight: tab === t.id ? "800" : "500",
+              fontSize: "13px",
+              color: tab === t.id ? "#C8392B" : "#6B7280",
+              cursor: "pointer", whiteSpace: "nowrap",
             }}>
-              {tab === "aktif" ? "Belum ada pesanan aktif" : "Belum ada pesanan selesai"}
-            </div>
-            <div style={{ fontSize: "12px", color: "#9CA3AF" }}>
-              {tab === "aktif"
-                ? "Pesanan yang sedang diproses akan muncul di sini"
-                : "Pesanan yang sudah selesai akan muncul di sini"}
-            </div>
+              {t.label}{count > 0 ? " (" + count + ")" : ""}
+            </button>
+          );
+        })}
+      </div>
+
+      <div style={{ padding: "14px 16px", paddingBottom: "80px" }}>
+        {tampil.length === 0 ? (
+          <div style={{ textAlign: "center", padding: "60px 20px" }}>
+            <div style={{ fontSize: "48px", marginBottom: "12px" }}>📦</div>
+            <div style={{ fontWeight: "700", fontSize: "15px", color: "#374151", marginBottom: "6px" }}>Belum ada pesanan</div>
+            <div style={{ fontSize: "12px", color: "#9CA3AF" }}>Pesanan kamu akan muncul di sini</div>
           </div>
         ) : (
           tampil.map(p => (
-            <PesananCard
-              key={p.orderId}
-              pesanan={p}
-              onBeriUlasan={onBeriUlasan}
-            />
+            <PesananCard key={p.orderId} pesanan={p} onLihatRincian={setRincian} />
           ))
         )}
       </div>
@@ -301,4 +376,3 @@ export default function Pesanan({ pesananList = [], filterStatus = null, onBack,
     </div>
   );
 }
-
