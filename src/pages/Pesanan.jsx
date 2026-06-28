@@ -2,7 +2,7 @@
 //  INSTAR APPAREL — PESANAN (Tokopedia-style)
 // ═══════════════════════════════════════════════════════════
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import config from "../config.js";
 
 const rp = (n) => "Rp " + (n || 0).toLocaleString("id-ID");
@@ -236,7 +236,7 @@ function RincianPesanan({ pesanan, onBack }) {
   );
 }
 
-function PesananCard({ pesanan, onLihatRincian }) {
+function PesananCard({ pesanan, onLihatRincian, onKonfirmasiTerima, onAjukanPengembalian, onBeriUlasan }) {
   const sc = STATUS_COLOR[pesanan.status] || STATUS_COLOR.diterima;
   const firstItem = pesanan.items?.[0];
 
@@ -290,36 +290,198 @@ function PesananCard({ pesanan, onLihatRincian }) {
           Lihat Detail
         </button>
         {pesanan.status === "dikirim" && (
-          <button
-            onClick={() => window.open("https://wa.me/" + config.whatsapp.bisnis + "?text=" + encodeURIComponent("Halo, saya ingin lacak pesanan #" + pesanan.orderId), "_blank")}
-            style={{ background: "#0A0A0A", border: "none", borderRadius: "10px", padding: "8px 16px", fontSize: "12px", fontWeight: "700", color: "white", cursor: "pointer" }}
-          >
-            Lacak
-          </button>
+          <>
+            <button
+              onClick={() => window.open("https://wa.me/" + config.whatsapp.bisnis + "?text=" + encodeURIComponent("Halo, saya ingin lacak pesanan #" + pesanan.orderId), "_blank")}
+              style={{ background: "none", border: "1.5px solid #E5E7EB", borderRadius: "10px", padding: "8px 14px", fontSize: "12px", fontWeight: "700", color: "#374151", cursor: "pointer" }}
+            >
+              Lacak
+            </button>
+            <button
+              onClick={() => onKonfirmasiTerima(pesanan)}
+              style={{ background: "#10B981", border: "none", borderRadius: "10px", padding: "8px 14px", fontSize: "12px", fontWeight: "700", color: "white", cursor: "pointer" }}
+            >
+              ✓ Diterima
+            </button>
+          </>
         )}
         {pesanan.status === "selesai" && (
-          <button style={{ background: "#C8392B", border: "none", borderRadius: "10px", padding: "8px 16px", fontSize: "12px", fontWeight: "700", color: "white", cursor: "pointer" }}>
-            Beri Ulasan
-          </button>
+          <>
+            <button
+              onClick={() => onAjukanPengembalian(pesanan)}
+              style={{ background: "none", border: "1.5px solid #E5E7EB", borderRadius: "10px", padding: "8px 14px", fontSize: "12px", fontWeight: "700", color: "#C8392B", cursor: "pointer" }}
+            >
+              Kembalikan
+            </button>
+            <button
+              onClick={() => onBeriUlasan(pesanan)}
+              style={{ background: "#C8392B", border: "none", borderRadius: "10px", padding: "8px 14px", fontSize: "12px", fontWeight: "700", color: "white", cursor: "pointer" }}
+            >
+              Beri Ulasan
+            </button>
+          </>
         )}
       </div>
     </div>
   );
 }
 
-export default function Pesanan({ pesananList = [], filterStatus = null, onBack }) {
+function KonfirmasiTerimaModal({ pesanan, onClose, onSelesai }) {
+  const [loading, setLoading] = useState(false);
+
+  const handleKonfirmasi = async () => {
+    setLoading(true);
+    try {
+      const SUPABASE_URL = "https://wfgjvpbehhbuysdklimg.supabase.co";
+      const SUPABASE_KEY = "sb_publishable_savuuXHTZZp_FZuTNfKqjQ_2iKIx6ZA";
+      await fetch(`${SUPABASE_URL}/rest/v1/pesanan?order_id=eq.${pesanan.orderId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": SUPABASE_KEY,
+          "Authorization": `Bearer ${SUPABASE_KEY}`,
+          "Prefer": "return=minimal",
+        },
+        body: JSON.stringify({ status: "selesai" }),
+      });
+      onSelesai();
+    } catch(e) {
+      alert("Gagal: " + e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 99, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
+      <div style={{ background: "white", borderRadius: "20px 20px 0 0", padding: "24px", width: "100%", maxWidth: "480px" }}>
+        <div style={{ fontSize: "32px", textAlign: "center", marginBottom: "12px" }}>📦</div>
+        <div style={{ fontWeight: "900", fontSize: "16px", color: "#0A0A0A", textAlign: "center", marginBottom: "6px" }}>Konfirmasi Pesanan Diterima</div>
+        <div style={{ fontSize: "13px", color: "#6B7280", textAlign: "center", marginBottom: "24px", lineHeight: 1.6 }}>
+          Pastikan pesanan sudah kamu terima dengan kondisi baik sebelum konfirmasi.
+        </div>
+        <div style={{ display: "flex", gap: "10px" }}>
+          <button onClick={onClose} style={{ flex: 1, padding: "13px", border: "1.5px solid #E5E7EB", borderRadius: "12px", background: "none", fontSize: "13px", fontWeight: "700", color: "#374151", cursor: "pointer" }}>
+            Batal
+          </button>
+          <button onClick={handleKonfirmasi} disabled={loading} style={{ flex: 2, padding: "13px", border: "none", borderRadius: "12px", background: loading ? "#E5E7EB" : "#10B981", fontSize: "13px", fontWeight: "800", color: "white", cursor: "pointer" }}>
+            {loading ? "Menyimpan..." : "✓ Pesanan Diterima"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PengembalianModal({ pesanan, onClose, onSelesai }) {
+  const [alasan,  setAlasan]  = useState("");
+  const [foto,    setFoto]    = useState(null);
+  const [preview, setPreview] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const fileRef = useRef(null);
+
+  const handleFoto = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setFoto(file);
+    setPreview(URL.createObjectURL(file));
+  };
+
+  const handleAjukan = async () => {
+    if (!alasan.trim()) { alert("Isi alasan pengembalian"); return; }
+    setLoading(true);
+    try {
+      const SUPABASE_URL = "https://wfgjvpbehhbuysdklimg.supabase.co";
+      const SUPABASE_KEY = "sb_publishable_savuuXHTZZp_FZuTNfKqjQ_2iKIx6ZA";
+      await fetch(`${SUPABASE_URL}/rest/v1/pesanan?order_id=eq.${pesanan.orderId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": SUPABASE_KEY,
+          "Authorization": `Bearer ${SUPABASE_KEY}`,
+          "Prefer": "return=minimal",
+        },
+        body: JSON.stringify({ status: "dikembalikan", catatan_admin: "PENGEMBALIAN: " + alasan }),
+      });
+      // Buka WA untuk lapor ke CS
+      const msg = encodeURIComponent("Halo, saya ingin mengajukan pengembalian pesanan #" + pesanan.orderId + " - Alasan: " + alasan);
+      window.open("https://wa.me/" + config.whatsapp.bisnis + "?text=" + msg, "_blank");
+      onSelesai();
+    } catch(e) {
+      alert("Gagal: " + e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 99, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
+      <div style={{ background: "white", borderRadius: "20px 20px 0 0", padding: "24px", width: "100%", maxWidth: "480px", maxHeight: "80vh", overflowY: "auto" }}>
+        <div style={{ fontWeight: "900", fontSize: "16px", color: "#0A0A0A", marginBottom: "4px" }}>Ajukan Pengembalian</div>
+        <div style={{ fontSize: "12px", color: "#9CA3AF", marginBottom: "20px" }}>Pesanan #{pesanan.orderId}</div>
+
+        <div style={{ marginBottom: "16px" }}>
+          <div style={{ fontSize: "12px", fontWeight: "700", color: "#374151", marginBottom: "8px" }}>Alasan Pengembalian *</div>
+          <textarea
+            value={alasan}
+            onChange={e => setAlasan(e.target.value)}
+            placeholder="Contoh: Warna tidak sesuai, ada cacat produksi, ukuran salah..."
+            rows={4}
+            style={{ width: "100%", border: "1.5px solid #E5E7EB", borderRadius: "10px", padding: "10px 14px", fontSize: "13px", fontFamily: "inherit", outline: "none", boxSizing: "border-box", resize: "none" }}
+          />
+        </div>
+
+        <div style={{ marginBottom: "20px" }}>
+          <div style={{ fontSize: "12px", fontWeight: "700", color: "#374151", marginBottom: "8px" }}>Foto Kerusakan (Opsional)</div>
+          {preview ? (
+            <div style={{ position: "relative", display: "inline-block" }}>
+              <img src={preview} style={{ width: "100px", height: "100px", objectFit: "cover", borderRadius: "10px", border: "1px solid #E5E7EB" }} />
+              <button onClick={() => { setFoto(null); setPreview(null); }} style={{ position: "absolute", top: "-6px", right: "-6px", background: "#0A0A0A", color: "white", border: "none", borderRadius: "50%", width: "20px", height: "20px", fontSize: "10px", cursor: "pointer" }}>✕</button>
+            </div>
+          ) : (
+            <button onClick={() => fileRef.current?.click()} style={{ width: "100px", height: "100px", border: "2px dashed #E5E7EB", borderRadius: "10px", background: "#F9FAFB", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "4px" }}>
+              <span style={{ fontSize: "24px" }}>📷</span>
+              <span style={{ fontSize: "10px", color: "#9CA3AF" }}>Upload Foto</span>
+            </button>
+          )}
+          <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handleFoto} />
+        </div>
+
+        <div style={{ background: "#FEF3C7", borderRadius: "10px", padding: "12px", marginBottom: "20px", fontSize: "12px", color: "#92400E" }}>
+          Setelah mengajukan, tim CS kami akan menghubungi kamu via WhatsApp untuk proses selanjutnya.
+        </div>
+
+        <div style={{ display: "flex", gap: "10px" }}>
+          <button onClick={onClose} style={{ flex: 1, padding: "13px", border: "1.5px solid #E5E7EB", borderRadius: "12px", background: "none", fontSize: "13px", fontWeight: "700", color: "#374151", cursor: "pointer" }}>
+            Batal
+          </button>
+          <button onClick={handleAjukan} disabled={loading} style={{ flex: 2, padding: "13px", border: "none", borderRadius: "12px", background: loading ? "#E5E7EB" : "#C8392B", fontSize: "13px", fontWeight: "800", color: "white", cursor: "pointer" }}>
+            {loading ? "Mengajukan..." : "Ajukan Pengembalian"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function Pesanan({ pesananList = [], filterStatus = null, onBack, onRefresh }) {
   const [tab, setTab]         = useState("semua");
   const [rincian, setRincian] = useState(null);
+  const [modalTerima,       setModalTerima]       = useState(null);
+  const [modalPengembalian, setModalPengembalian] = useState(null);
+  const [localList, setLocalList] = useState(pesananList);
+
+  useEffect(() => { setLocalList(pesananList); }, [pesananList]);
 
   if (rincian) {
     return <RincianPesanan pesanan={rincian} onBack={() => setRincian(null)} />;
   }
 
   const tampil = tab === "semua"
-    ? pesananList
-    : tab === "diterima" ? pesananList.filter(p => ["diterima","konfirmasi"].includes(p.status))
-    : tab === "produksi" ? pesananList.filter(p => ["produksi","qc"].includes(p.status))
-    : pesananList.filter(p => p.status === tab);
+    ? localList
+    : tab === "diterima" ? localList.filter(p => ["diterima","konfirmasi"].includes(p.status))
+    : tab === "produksi" ? localList.filter(p => ["produksi","qc"].includes(p.status))
+    : localList.filter(p => p.status === tab);
 
   return (
     <div style={{ background: "#F2F2F0", minHeight: "100vh" }}>
@@ -340,9 +502,9 @@ export default function Pesanan({ pesananList = [], filterStatus = null, onBack 
       <div style={{ background: "white", borderBottom: "1px solid #E5E7EB", display: "flex", overflowX: "auto", padding: "0 8px", scrollbarWidth: "none" }}>
         {TABS.map(t => {
           const count = t.id === "semua" ? pesananList.length
-            : t.id === "diterima" ? pesananList.filter(p => ["diterima","konfirmasi"].includes(p.status)).length
-            : t.id === "produksi" ? pesananList.filter(p => ["produksi","qc"].includes(p.status)).length
-            : pesananList.filter(p => p.status === t.id).length;
+            : t.id === "diterima" ? localList.filter(p => ["diterima","konfirmasi"].includes(p.status)).length
+            : t.id === "produksi" ? localList.filter(p => ["produksi","qc"].includes(p.status)).length
+            : localList.filter(p => p.status === t.id).length;
           return (
             <button key={t.id} onClick={() => setTab(t.id)} style={{
               flexShrink: 0, padding: "12px 14px",
@@ -368,11 +530,44 @@ export default function Pesanan({ pesananList = [], filterStatus = null, onBack 
           </div>
         ) : (
           tampil.map(p => (
-            <PesananCard key={p.orderId} pesanan={p} onLihatRincian={setRincian} />
+            <PesananCard
+              key={p.orderId}
+              pesanan={p}
+              onLihatRincian={setRincian}
+              onKonfirmasiTerima={setModalTerima}
+              onAjukanPengembalian={setModalPengembalian}
+              onBeriUlasan={onBeriUlasan}
+            />
           ))
         )}
       </div>
 
+      {modalTerima && (
+        <KonfirmasiTerimaModal
+          pesanan={modalTerima}
+          onClose={() => setModalTerima(null)}
+          onSelesai={() => {
+            setLocalList(prev => prev.map(p =>
+              p.orderId === modalTerima.orderId ? { ...p, status: "selesai" } : p
+            ));
+            setModalTerima(null);
+            onRefresh?.();
+          }}
+        />
+      )}
+      {modalPengembalian && (
+        <PengembalianModal
+          pesanan={modalPengembalian}
+          onClose={() => setModalPengembalian(null)}
+          onSelesai={() => {
+            setLocalList(prev => prev.map(p =>
+              p.orderId === modalPengembalian.orderId ? { ...p, status: "dikembalikan" } : p
+            ));
+            setModalPengembalian(null);
+            onRefresh?.();
+          }}
+        />
+      )}
     </div>
   );
 }

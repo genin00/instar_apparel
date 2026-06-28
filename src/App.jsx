@@ -380,12 +380,28 @@ export default function App() {
     );
   }
 
+  const handleRefreshPesanan = async () => {
+    if (!akun) return;
+    try {
+      const { getOrders } = await import("./services/orderService.js");
+      const data = await getOrders(akun.id);
+      if (data && data.length > 0) setPesananList(data);
+    } catch(e) { console.error(e); }
+  };
+
   if (halaman === "pesanan") {
     return (
       <Pesanan
         pesananList={pesananList}
         filterStatus={pesananFilter}
         onBack={() => { setPesananFilter(null); setHalaman(null); }}
+        onRefresh={handleRefreshPesanan}
+        onBeriUlasan={(pesanan) => {
+          const item = pesanan.items?.[0];
+          if (!item) return;
+          setReviewTarget({ pesanan, item });
+          setHalaman("tulis-review");
+        }}
       />
     );
   }
