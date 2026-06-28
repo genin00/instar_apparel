@@ -59,7 +59,7 @@ export default function App() {
   const [desainAwalAktif, setDesainAwalAktif] = useState(null);
   const [keranjang,     setKeranjang]     = useState(() => load("instar_keranjang", []));
   const [wishlist,      setWishlist]      = useState(() => load("instar_wishlist", []));
-  const [pesananList,   setPesananList]   = useState(() => { try { const v = localStorage.getItem("instar_pesanan"); return v ? JSON.parse(v) : []; } catch { return []; } });
+  const [pesananList,   setPesananList]   = useState([]);
   const [akun,          setAkun]          = useState(null);
   const [profilUser,    setProfilUser]    = useState(null);
   const [authLoading,   setAuthLoading]   = useState(true);
@@ -142,6 +142,14 @@ export default function App() {
     return () => subscription.unsubscribe();
   }, []);
 
+  // ── Load pesanan dari Supabase ──────────────────────────────
+  useEffect(() => {
+    if (!akun) { setPesananList([]); return; }
+    getOrders(akun.id).then(data => {
+      if (data && data.length > 0) setPesananList(data);
+    }).catch(() => {});
+  }, [akun]);
+
   // ── Badge unread chat ────────────────────────────────────────
   useEffect(() => {
     if (!akun) { setUnreadChat(0); return; }
@@ -209,7 +217,17 @@ export default function App() {
     setShowLogin(true);
   };
 
-  const handleAccDesain = (conversation) => {
+  const handleAccDesain = async (conversation) => {
+    // Update status pesanan ke produksi otomatis
+    if (conversation.order_id) {
+      try {
+        const { updateOrderStatus } = await import("./services/orderService.js");
+        await updateOrderStatus(conversation.order_id, "produksi");
+        setPesananList(prev => prev.map(p =>
+          p.orderId === conversation.order_id ? { ...p, status: "produksi" } : p
+        ));
+      } catch(e) { console.error(e); }
+    }
     const meta = conversation.metadata || {};
     const items = [{
       id:          'brief-' + Date.now(),
@@ -248,6 +266,7 @@ export default function App() {
         day: "2-digit", month: "short", year: "numeric",
       }),
       status: checkoutItems.every(i => i.opsiDesain === "brief") ? "desain" : "diterima",
+      customerId: akun?.id || null,
       items:      checkoutItems,
       totalQty:   checkoutItems.reduce((a, i) => a + i.totalQty, 0),
       totalHarga: checkoutItems.reduce((a, i) => a + i.totalHarga, 0),

@@ -13,21 +13,27 @@ const headers = {
 
 const endpoint = `${SUPABASE_URL}/rest/v1/pesanan`;
 
-export const getOrders = async () => {
+export const getOrders = async (customerId) => {
   try {
-    const res = await fetch(`${endpoint}?order=created_at.desc`, { headers });
+    const url = customerId
+      ? `${endpoint}?customer_id=eq.${customerId}&order=created_at.desc`
+      : `${endpoint}?order=created_at.desc`;
+    const res = await fetch(url, { headers });
     if (!res.ok) return [];
     const data = await res.json();
     return data.map(row => ({
-      orderId:    row.order_id,
-      tanggal:    row.tanggal,
-      status:     row.status,
-      items:      row.items,
-      totalQty:   row.total_qty,
-      totalHarga: row.total_harga,
-      nama:       row.nama,
-      telepon:    row.telepon,
-      alamat:     row.alamat,
+      orderId:           row.order_id,
+      tanggal:           row.tanggal,
+      status:            row.status,
+      items:             row.items,
+      totalQty:          row.total_qty,
+      totalHarga:        row.total_harga,
+      nama:              row.nama,
+      telepon:           row.telepon,
+      alamat:            row.alamat,
+      ongkir:            row.ongkir || 0,
+      metodePembayaran:  row.metode_pembayaran || "-",
+      customerId:        row.customer_id,
     }));
   } catch { return []; }
 };
@@ -38,15 +44,18 @@ export const saveOrder = async (order) => {
       method: "POST",
       headers: { ...headers, "Prefer": "return=minimal" },
       body: JSON.stringify({
-        order_id:    order.orderId,
-        tanggal:     order.tanggal,
-        status:      order.status,
-        items:       order.items,
-        total_qty:   order.totalQty,
-        total_harga: order.totalHarga,
-        nama:        order.nama,
-        telepon:     order.telepon,
-        alamat:      order.alamat,
+        order_id:          order.orderId,
+        tanggal:           order.tanggal,
+        status:            order.status,
+        items:             order.items,
+        total_qty:         order.totalQty,
+        total_harga:       order.totalHarga,
+        nama:              order.nama,
+        telepon:           order.telepon,
+        alamat:            order.alamat,
+        ongkir:            order.ongkir || 0,
+        metode_pembayaran: order.metodePembayaran || null,
+        customer_id:       order.customerId || null,
       }),
     });
   } catch {}
