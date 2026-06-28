@@ -7,7 +7,7 @@ import { supabase } from "./supabase.js";
 
 // ── GET / BUAT CONVERSATION ─────────────────────────────────
 // Cari conversation aktif milik customer, atau buat baru
-export async function getOrCreateConversation(customerId, orderId = null) {
+export async function getOrCreateConversation(customerId, orderId = null, metadata = null) {
   // Cari conversation open yang sudah ada
   let query = supabase
     .from("conversations")
@@ -21,7 +21,18 @@ export async function getOrCreateConversation(customerId, orderId = null) {
 
   const { data: existing, error: findErr } = await query;
   if (findErr) throw findErr;
-  if (existing && existing.length > 0) return existing[0];
+  if (existing && existing.length > 0) {
+    const conv = existing[0];
+    // Update metadata kalau masih null
+    if (!conv.metadata && metadata) {
+      await supabase
+        .from("conversations")
+        .update({ metadata })
+        .eq("id", conv.id);
+      conv.metadata = metadata;
+    }
+    return conv;
+  }
 
   // Buat baru
   const { data: newConv, error: createErr } = await supabase
@@ -30,6 +41,7 @@ export async function getOrCreateConversation(customerId, orderId = null) {
       customer_id: customerId,
       order_id:    orderId || null,
       status:      "open",
+      metadata:    metadata || null,
     })
     .select()
     .single();
@@ -63,7 +75,7 @@ export async function getMessages(conversationId) {
 }
 
 // ── KIRIM PESAN ─────────────────────────────────────────────
-export async function sendMessage({ conversationId, senderId, senderRole, body, imageUrl = null }) {
+export async function sendMessage({ conversationId, senderId, senderRole, body, imageUrl = null, type = "text" }) {
   const { data: msg, error: msgErr } = await supabase
     .from("messages")
     .insert({
@@ -73,6 +85,7 @@ export async function sendMessage({ conversationId, senderId, senderRole, body, 
       body:            body || null,
       image_url:       imageUrl || null,
       is_read:         false,
+      type:             type,
     })
     .select()
     .single();

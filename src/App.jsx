@@ -22,6 +22,7 @@ import TulisReview   from "./pages/TulisReview.jsx";
 import Akun          from "./pages/Akun.jsx";
 import LoginPopup    from "./components/LoginPopup.jsx";
 import ChatCenter    from "./pages/ChatCenter.jsx";
+import PromoPopup    from "./components/PromoPopup.jsx";
 import ChatRoom      from "./pages/ChatRoom.jsx";
 import { getTotalUnread, subscribeToConversations } from "./lib/chatService.js";
 
@@ -208,6 +209,28 @@ export default function App() {
     setShowLogin(true);
   };
 
+  const handleAccDesain = (conversation) => {
+    const meta = conversation.metadata || {};
+    const items = [{
+      id:          'brief-' + Date.now(),
+      produk:      meta.produk || { nama: 'Kaos Custom' },
+      nama:        meta.produk?.nama || 'Kaos Custom',
+      warna:       meta.warna || null,
+      warnaLabel:  meta.warnaLabel || '-',
+      opsiDesain:  'brief',
+      briefKat:    meta.briefKat || '-',
+      briefTeks:   meta.briefTeks || {},
+      modeUkuran:  meta.modeUkuran || 'satuan',
+      satuanSize:  meta.satuanSize || '-',
+      satuanQty:   meta.satuanQty || 1,
+      massalQty:   meta.massalQty || null,
+      totalQty:    meta.totalQty || 1,
+      totalHarga:  meta.totalHarga || 0,
+      conversationId: conversation.id,
+    }];
+    handleCheckout(items);
+  };
+
   const handleCheckout = (items) => {
     if (!akun) {
       setCheckoutItems(items);
@@ -354,6 +377,7 @@ export default function App() {
         akun={akun}
         conversation={chatConv}
         onBack={() => { setChatConv(null); setHalaman("chat"); }}
+        onAccDesain={handleAccDesain}
       />
     );
   }
@@ -603,6 +627,14 @@ export default function App() {
         </button>
       )}
 
+      <PromoPopup
+        onCta={(promo) => {
+          if (promo.cta === "Chat Desainer") {
+            if (!akun) { setLoginPesan("Login untuk chat desainer"); setShowLogin(true); return; }
+            setHalaman("chat");
+          }
+        }}
+      />
       <BottomNav
         aktif={tab}
         onChange={(t) => navigateTab(t)}

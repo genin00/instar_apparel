@@ -33,7 +33,7 @@ export default function ChatCenter({ akun, pesananList = [], onOpenRoom, onBack,
     const bukaRoom = async () => {
       try {
         const { getOrCreateConversation, sendMessage } = await import("../lib/chatService.js");
-        const conv = await getOrCreateConversation(akun.id, null);
+        const conv = await getOrCreateConversation(akun.id, null, briefContext);
 
         const lines = [
           "Halo! Saya ingin konsultasi desain kaos:",

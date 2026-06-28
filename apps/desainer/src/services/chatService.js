@@ -1,43 +1,80 @@
-// ═══════════════════════════════════════════════════════════
-//  INSTAR APPAREL — CHAT SERVICE
-// ═══════════════════════════════════════════════════════════
 import supabase from "../lib/supabase.js";
 
-// ── Ambil semua pesan per order ─────────────────────────────
-export const getPesan = async (orderId) => {
-  const { data, error } = await supabase
-    .from("chat_pesan")
+// Cari conversation berdasarkan order_id (dibuat oleh customer)
+export const getConversationByOrder = async (orderId) => {
+  const { data } = await supabase
+    .from("conversations")
     .select("*")
-    .eq("order_id", orderId.toUpperCase())
+    .eq("order_id", orderId)
+    .order("created_at", { ascending: false })
+    .limit(1);
+  return data?.[0] || null;
+};
+
+// Ambil semua conversations (untuk dashboard badge)
+export const getAllConversations = async () => {
+  const { data } = await supabase
+    .from("conversations")
+    .select("*")
+    .order("last_at", { ascending: false });
+  return data || [];
+};
+
+// Ambil pesan dalam conversation
+export const getMessages = async (conversationId) => {
+  const { data, error } = await supabase
+    .from("messages")
+    .select("*")
+    .eq("conversation_id", conversationId)
     .order("created_at", { ascending: true });
   if (error) throw error;
   return data || [];
 };
 
-// ── Kirim pesan teks ────────────────────────────────────────
-export const kirimPesan = async ({ orderId, senderId, senderRole, isi }) => {
+// Kirim pesan teks (dari desainer)
+export const kirimPesan = async ({ conversationId, senderId, isi, type = "text" }) => {
   const { data, error } = await supabase
-    .from("chat_pesan")
+    .from("messages")
     .insert({
-      order_id:    orderId.toUpperCase(),
-      sender_id:   senderId,
-      sender_role: senderRole,
-      tipe:        "teks",
-      isi,
+      conversation_id: conversationId,
+      sender_id:       senderId,
+      sender_role:     "desainer",
+      body:            isi,
+      image_url:       null,
+      is_read:         false,
+      type:            type,
     })
     .select()
     .single();
   if (error) throw error;
+
+  // Update last_message + increment unread_customer
+  const { data: conv } = await supabase
+    .from("conversations")
+    .select("unread_customer")
+    .eq("id", conversationId)
+    .single();
+
+  await supabase
+    .from("conversations")
+    .update({
+      last_message:    isi,
+      last_at:         new Date().toISOString(),
+      unread_customer: (conv?.unread_customer || 0) + 1,
+    })
+    .eq("id", conversationId);
+
   return data;
 };
 
-// ── Kirim pesan gambar ──────────────────────────────────────
-export const kirimGambar = async ({ orderId, senderId, senderRole, file }) => {
-  const ext      = file.name.split(".").pop();
-  const path     = `chat/${orderId}/${Date.now()}.${ext}`;
+// Kirim gambar (dari desainer)
+export const kirimGambar = async ({ conversationId, senderId, file }) => {
+  const ext  = file.name.split(".").pop();
+  const path = `desainer/${senderId}/${Date.now()}.${ext}`;
+
   const { error: upErr } = await supabase.storage
     .from("chat-images")
-    .upload(path, file, { upsert: true });
+    .upload(path, file, { upsert: false });
   if (upErr) throw upErr;
 
   const { data: urlData } = supabase.storage
@@ -45,69 +82,84 @@ export const kirimGambar = async ({ orderId, senderId, senderRole, file }) => {
     .getPublicUrl(path);
 
   const { data, error } = await supabase
-    .from("chat_pesan")
+    .from("messages")
     .insert({
-      order_id:    orderId.toUpperCase(),
-      sender_id:   senderId,
-      sender_role: senderRole,
-      tipe:        "gambar",
-      gambar_url:  urlData.publicUrl,
+      conversation_id: conversationId,
+      sender_id:       senderId,
+      sender_role:     "desainer",
+      body:            null,
+      image_url:       urlData.publicUrl,
+      is_read:         false,
     })
     .select()
     .single();
   if (error) throw error;
-  return data;
-};
 
-// ── Kirim pesan sistem (otomatis) ───────────────────────────
-export const kirimPesanSistem = async ({ orderId, isi }) => {
-  const { data, error } = await supabase
-    .from("chat_pesan")
-    .insert({
-      order_id:    orderId.toUpperCase(),
-      sender_id:   "00000000-0000-0000-0000-000000000000",
-      sender_role: "sistem",
-      tipe:        "sistem",
-      isi,
-    })
-    .select()
+  const { data: conv } = await supabase
+    .from("conversations")
+    .select("unread_customer")
+    .eq("id", conversationId)
     .single();
-  if (error) throw error;
+
+  await supabase
+    .from("conversations")
+    .update({
+      last_message:    "📷 Gambar desain",
+      last_at:         new Date().toISOString(),
+      unread_customer: (conv?.unread_customer || 0) + 1,
+    })
+    .eq("id", conversationId);
+
   return data;
 };
 
-// ── Subscribe realtime ──────────────────────────────────────
-export const subscribeChat = (orderId, callback) => {
+// Tandai sudah dibaca oleh desainer
+export const markAsRead = async (conversationId) => {
+  await supabase
+    .from("messages")
+    .update({ is_read: true })
+    .eq("conversation_id", conversationId)
+    .eq("sender_role", "customer")
+    .eq("is_read", false);
+
+  await supabase
+    .from("conversations")
+    .update({ unread_desainer: 0 })
+    .eq("id", conversationId);
+};
+
+// Subscribe realtime pesan
+export const subscribeMessages = (conversationId, callback) => {
   const channel = supabase
-    .channel(`chat_${orderId}`)
+    .channel(`msg_${conversationId}`)
     .on("postgres_changes", {
       event:  "INSERT",
       schema: "public",
-      table:  "chat_pesan",
-      filter: `order_id=eq.${orderId.toUpperCase()}`,
+      table:  "messages",
+      filter: `conversation_id=eq.${conversationId}`,
     }, payload => callback(payload.new))
     .subscribe();
   return () => supabase.removeChannel(channel);
 };
 
-// ── Ambil daftar chat (per user) ────────────────────────────
-export const getDaftarChat = async (pesananList) => {
-  if (!pesananList.length) return [];
-  const orderIds = pesananList.map(p => p.orderId.toUpperCase());
-  const hasil = [];
-  for (const orderId of orderIds) {
-    const { data } = await supabase
-      .from("chat_pesan")
-      .select("*")
-      .eq("order_id", orderId)
-      .order("created_at", { ascending: false })
-      .limit(1);
-    const pesanan = pesananList.find(p => p.orderId.toUpperCase() === orderId);
-    hasil.push({
-      orderId,
-      pesanan,
-      pesanTerakhir: data?.[0] || null,
-    });
-  }
-  return hasil;
+// Subscribe realtime conversations (untuk badge unread di dashboard)
+export const subscribeConversations = (callback) => {
+  const channel = supabase
+    .channel("conv_desainer")
+    .on("postgres_changes", {
+      event:  "*",
+      schema: "public",
+      table:  "conversations",
+    }, () => callback())
+    .subscribe();
+  return () => supabase.removeChannel(channel);
 };
+
+// Total unread untuk desainer
+export const getTotalUnread = async () => {
+  const { data } = await supabase
+    .from("conversations")
+    .select("unread_desainer");
+  return (data || []).reduce((sum, c) => sum + (c.unread_desainer || 0), 0);
+};
+
