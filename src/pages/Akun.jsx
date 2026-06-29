@@ -6,6 +6,7 @@ import { useState } from "react";
 import Header from "../components/Header.jsx";
 import config from "../config.js";
 import { InstarLogo } from "../components/Header.jsx";
+import { kirimOTP, verifikasiOTP, formatPhone } from "../services/otpService.js";
 import { register, login, logout, updateProfil, uploadFotoProfil, getAlamat, tambahAlamat, updateAlamat, hapusAlamat, resetPassword } from "../lib/auth.js";
 
 // ── AVATAR ───────────────────────────────────────────────────
@@ -94,12 +95,16 @@ function SectionCard({ title, children }) {
 function HalamanAuth() {
   const [mode, setMode] = useState("login");
   const [email, setEmail] = useState("");
+  const [noHpDaftar, setNoHpDaftar] = useState("");
   const [password, setPassword] = useState("");
   const [nama, setNama] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [info, setInfo] = useState("");
   const [resetMode, setResetMode] = useState(false);
+  const [otpMode, setOtpMode] = useState(false);
+  const [otpKode, setOtpKode] = useState("");
+  const [noHpFormatted, setNoHpFormatted] = useState("");
 
   const S = {
     input: {
@@ -114,14 +119,16 @@ function HalamanAuth() {
     if (!email.trim()) { setError("Email tidak boleh kosong"); return; }
     if (!password.trim()) { setError("Password tidak boleh kosong"); return; }
     if (mode === "daftar" && !nama.trim()) { setError("Nama tidak boleh kosong"); return; }
+    if (mode === "daftar" && !noHpDaftar.trim()) { setError("No HP tidak boleh kosong"); return; }
     setError(""); setInfo(""); setLoading(true);
     try {
       if (mode === "login") {
         await login({ email: email.trim(), password });
       } else {
-        await register({ email: email.trim(), password, nama: nama.trim() });
-        setInfo("Cek email kamu untuk verifikasi akun, lalu login.");
-        setMode("login");
+        const phone = await kirimOTP(noHpDaftar);
+        setNoHpFormatted(phone);
+        setOtpMode(true);
+        setInfo("Kode OTP sudah dikirim ke WhatsApp kamu");
       }
     } catch (e) {
       setError(e.message || "Terjadi kesalahan, coba lagi.");
@@ -143,6 +150,118 @@ function HalamanAuth() {
       setLoading(false);
     }
   };
+
+  const handleVerifikasiOTP = async () => {
+    if (!otpKode.trim()) { setError("Masukkan kode OTP"); return; }
+    setError(""); setLoading(true);
+    try {
+      const hasil = verifikasiOTP(noHpFormatted, otpKode);
+      if (!hasil.valid) { setError(hasil.pesan); setLoading(false); return; }
+      await register({ email: email.trim(), password, nama: nama.trim(), noHp: noHpFormatted });
+      setInfo("Akun berhasil dibuat! Cek email untuk verifikasi lalu login.");
+      setOtpMode(false);
+      setMode("login");
+    } catch (e) {
+      setError(e.message || "Gagal membuat akun, coba lagi.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleKirimUlangOTP = async () => {
+    setError(""); setInfo(""); setLoading(true);
+    try {
+      await kirimOTP(noHpDaftar);
+      setInfo("OTP baru sudah dikirim ke WhatsApp kamu");
+    } catch (e) {
+      setError(e.message || "Gagal kirim ulang OTP");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ── LAYAR VERIFIKASI OTP ──
+  if (otpMode) {
+    return (
+      <div style={{ background: "#F2F2F0", minHeight: "100vh", paddingBottom: "80px" }}>
+        <Header halaman="akun" judul="Verifikasi WA" />
+        <div style={{ padding: "32px 20px 0", maxWidth: "480px", margin: "0 auto" }}>
+
+          <div style={{ textAlign: "center", marginBottom: "32px" }}>
+            <div style={{ fontSize: "52px", marginBottom: "12px" }}>📱</div>
+            <div style={{ fontWeight: "900", fontSize: "22px", color: "#0A0A0A" }}>
+              Cek WhatsApp Kamu
+            </div>
+            <div style={{ fontSize: "13px", color: "#9CA3AF", marginTop: "6px", lineHeight: 1.6 }}>
+              Kode OTP 6 digit sudah dikirim ke<br />
+              <strong style={{ color: "#0A0A0A" }}>+{noHpFormatted}</strong>
+            </div>
+          </div>
+
+          <div style={{ background: "white", borderRadius: "16px", padding: "20px", marginBottom: "14px" }}>
+            <div style={{ fontWeight: "600", fontSize: "12px", color: "#374151", marginBottom: "8px" }}>
+              KODE OTP
+            </div>
+            <input
+              value={otpKode}
+              onChange={e => { setOtpKode(e.target.value.replace(/\D/g, "").slice(0, 6)); setError(""); }}
+              placeholder="_ _ _ _ _ _"
+              type="tel"
+              maxLength={6}
+              style={{
+                width: "100%", borderRadius: "12px", border: "2px solid",
+                borderColor: otpKode.length === 6 ? "#10B981" : "#E5E7EB",
+                padding: "16px", fontSize: "28px", fontWeight: "900",
+                textAlign: "center", letterSpacing: "12px", outline: "none",
+                boxSizing: "border-box", fontFamily: "monospace",
+                color: otpKode.length === 6 ? "#10B981" : "#0A0A0A",
+              }}
+            />
+            {error && <div style={{ fontSize: "12px", color: "#C8392B", marginTop: "8px", textAlign: "center" }}>⚠️ {error}</div>}
+            {info  && <div style={{ fontSize: "12px", color: "#10B981", marginTop: "8px", textAlign: "center" }}>✅ {info}</div>}
+          </div>
+
+          <button
+            onClick={handleVerifikasiOTP}
+            disabled={loading || otpKode.length !== 6}
+            style={{
+              width: "100%", padding: "14px", borderRadius: "12px", border: "none",
+              background: (loading || otpKode.length !== 6) ? "#E5E7EB" : "#0A0A0A",
+              color: (loading || otpKode.length !== 6) ? "#9CA3AF" : "white",
+              fontWeight: "900", fontSize: "15px",
+              cursor: (loading || otpKode.length !== 6) ? "not-allowed" : "pointer",
+              marginBottom: "12px",
+            }}
+          >
+            {loading ? "Memverifikasi..." : "Verifikasi & Buat Akun →"}
+          </button>
+
+          <button
+            onClick={handleKirimUlangOTP}
+            disabled={loading}
+            style={{
+              width: "100%", padding: "12px", borderRadius: "12px",
+              border: "2px solid #E5E7EB", background: "white",
+              fontWeight: "700", fontSize: "13px", color: "#6B7280", cursor: "pointer",
+              marginBottom: "10px",
+            }}
+          >
+            🔄 Kirim Ulang OTP
+          </button>
+
+          <button
+            onClick={() => { setOtpMode(false); setOtpKode(""); setError(""); setInfo(""); }}
+            style={{
+              width: "100%", padding: "10px", border: "none",
+              background: "none", fontSize: "13px", color: "#9CA3AF", cursor: "pointer",
+            }}
+          >
+            ← Kembali
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (resetMode) {
     return (
@@ -510,7 +629,7 @@ function HalamanAlamat({ userId, onBack }) {
 }
 
 // ── HALAMAN UTAMA AKUN ────────────────────────────────────────
-export default function Akun({ akun, profil, onProfilUpdate, pesananList = [], onLogout, onLihatPesanan, wishlist = [], onCustom }) {
+export default function Akun({ akun, profil, onProfilUpdate, pesananList = [], onLogout, onLihatPesanan, wishlist = [], onCustom, onKodeGrup }) {
   const [subHalaman, setSubHalaman] = useState(null);
 
   if (!akun) return <HalamanAuth />;
@@ -616,6 +735,15 @@ export default function Akun({ akun, profil, onProfilUpdate, pesananList = [], o
             icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" stroke="#374151" strokeWidth="1.7"/><circle cx="12" cy="10" r="3" stroke="#374151" strokeWidth="1.7"/></svg>}
             label="Alamat Saya" sub="Kelola alamat pengiriman"
             action={() => setSubHalaman("alamat")} />
+        </SectionCard>
+
+        {/* KARYA */}
+        <SectionCard title="KARYA">
+          <MenuItem
+            icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="3" stroke="#374151" strokeWidth="1.7"/><path d="M8 12l3 3 5-5" stroke="#374151" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+            label="Kode Grup"
+            sub="Masukkan kode untuk lihat & ulasan karya kamu"
+            action={() => onKodeGrup?.()} />
         </SectionCard>
 
         {/* BANTUAN */}

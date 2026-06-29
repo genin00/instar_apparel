@@ -24,6 +24,7 @@ import LoginPopup    from "./components/LoginPopup.jsx";
 import ChatCenter    from "./pages/ChatCenter.jsx";
 import PromoPopup    from "./components/PromoPopup.jsx";
 import ChatRoom      from "./pages/ChatRoom.jsx";
+import KodeGrup     from "./pages/KodeGrup.jsx";
 import { getTotalUnread, subscribeToConversations } from "./lib/chatService.js";
 
 const load = (key, fallback) => {
@@ -71,6 +72,7 @@ export default function App() {
   const [loginPesan,     setLoginPesan]     = useState("");
   const [pendingItem,    setPendingItem]    = useState(null);
   const [chatConv,       setChatConv]       = useState(null);
+  const [halamanKodeGrup, setHalamanKodeGrup] = useState(false);
   const [chatBriefContext, setChatBriefContext] = useState(null);
 
   const navigateTab = (newTab) => {
@@ -406,6 +408,16 @@ export default function App() {
     );
   }
 
+  if (halamanKodeGrup) {
+    return (
+      <KodeGrup
+        akun={akun}
+        onBack={() => setHalamanKodeGrup(false)}
+        onLihatKarya={(k) => { setHalamanKodeGrup(false); navigateTab("karya"); }}
+      />
+    );
+  }
+
   if (halaman === "chat-room" && chatConv) {
     return (
       <ChatRoom
@@ -553,6 +565,7 @@ export default function App() {
         {tab === "beranda" && (
           <Beranda
             onCustom={handleCustom}
+            onKodeGrup={() => setHalamanKodeGrup(true)}
             onWishlist={handleWishlist}
             wishlist={wishlist}
             onLihatSemua={() => navigateTab("produk")}
@@ -564,6 +577,7 @@ export default function App() {
         {tab === "produk" && (
           <Produk
             onCustom={handleCustom}
+            onKodeGrup={() => setHalamanKodeGrup(true)}
             onWishlist={handleWishlist}
             wishlist={wishlist}
             keranjangCount={keranjang.length}
@@ -600,6 +614,7 @@ export default function App() {
             onLihatPesanan={(filter) => { setPesananFilter(filter || null); setHalaman("pesanan"); }}
             wishlist={wishlist}
             onCustom={handleCustom}
+            onKodeGrup={() => setHalamanKodeGrup(true)}
           />
         )}
       </div>

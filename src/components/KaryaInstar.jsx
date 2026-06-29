@@ -7,6 +7,7 @@ import { useState, useEffect } from "react";
 import karyaData from "../data/karya.js";
 import products, { warnaKaos, ukuranTersedia } from "../data/products.js";
 import supabase from "../lib/supabase.js";
+import { isMemberKarya } from "../services/karyaService.js";
 
 const kategoriKarya = [
   { id: "semua",      label: "Semua" },
@@ -87,16 +88,17 @@ function KaryaModal({ item, onClose, onBuatSepertiIni, akun, pesananList = [] })
   const [komentar,    setKomentar]    = useState("");
   const [loading,     setLoading]     = useState(false);
   const [loadUlasan,  setLoadUlasan]  = useState(false);
+  const [isAnonim,    setIsAnonim]    = useState(false);
 
   // Cek apakah user pernah pesan (status selesai)
-  const pernahPesan = pesananList.some(p => p.status === "selesai");
+  const [isMember, setIsMember] = useState(false);
 
   const muatUlasan = async () => {
     if (!item) return;
     setLoadUlasan(true);
     try {
       const { data } = await supabase
-        .from("ulasan_karya")
+        .from("karya_ulasan")
         .select("*")
         .eq("karya_id", item.id)
         .order("created_at", { ascending: false });
@@ -109,6 +111,9 @@ function KaryaModal({ item, onClose, onBuatSepertiIni, akun, pesananList = [] })
         setRataRating({ rata: 0, total: 0 });
       }
       if (akun) {
+        const member = await isMemberKarya(item.id, akun.id);
+        console.log("isMember result:", member, "karya:", item.id, "user:", akun.id);
+        setIsMember(member);
         const sudah = list.some(u => u.user_id === akun.id);
         setSudahUlasan(sudah);
       }
@@ -134,12 +139,14 @@ function KaryaModal({ item, onClose, onBuatSepertiIni, akun, pesananList = [] })
     if (!rating || !akun) return;
     setLoading(true);
     try {
-      await supabase.from("ulasan_karya").insert({
+      await supabase.from("karya_ulasan").insert({
         karya_id:  item.id,
         user_id:   akun.id,
-        nama_user: akun.user_metadata?.nama || akun.email?.split("@")[0] || "Pengguna",
+        
         rating,
-        komentar:  komentar.trim(),
+        teks: komentar.trim(),
+        nama_user: isAnonim ? "Anonim" : (akun.user_metadata?.nama || akun.email?.split("@")[0] || "Pengguna"),
+        is_anonim: isAnonim,
       });
       setSudahUlasan(true);
       setRating(0);
@@ -278,7 +285,7 @@ function KaryaModal({ item, onClose, onBuatSepertiIni, akun, pesananList = [] })
               </div>
             )}
 
-            {akun && !pernahPesan && (
+            {akun && !isMember && (
               <div style={{ background: "#F2F2F0", borderRadius: "12px", padding: "14px",
                 fontSize: "13px", color: "#6B7280", marginBottom: "14px", textAlign: "center",
                 lineHeight: 1.5 }}>
@@ -286,11 +293,11 @@ function KaryaModal({ item, onClose, onBuatSepertiIni, akun, pesananList = [] })
               </div>
             )}
 
-            {akun && pernahPesan && !sudahUlasan && (
+            {akun && isMember && !sudahUlasan && (
               <div style={{ background: "white", borderRadius: "14px", padding: "16px",
                 border: "1.5px solid #E5E7EB", marginBottom: "16px" }}>
                 <div style={{ fontWeight: "800", fontSize: "14px", marginBottom: "12px", color: "#0A0A0A" }}>
-                  ✍️ Tulis Ulasan Kamu
+                  Tulis Ulasan Kamu
                 </div>
                 <div style={{ marginBottom: "10px" }}>
                   <div style={{ fontSize: "12px", color: "#6B7280", marginBottom: "6px" }}>Rating</div>
@@ -303,6 +310,13 @@ function KaryaModal({ item, onClose, onBuatSepertiIni, akun, pesananList = [] })
                     fontSize: "13px", resize: "none", outline: "none",
                     boxSizing: "border-box", fontFamily: "inherit",
                     marginBottom: "10px", background: "#FAFAFA" }} />
+                <button onClick={() => setIsAnonim(!isAnonim)}
+                  style={{ width: "100%", padding: "11px", borderRadius: "10px", border: "1.5px solid #E5E7EB", background: isAnonim ? "#0A0A0A" : "white", marginBottom: "10px", display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer" }}>
+                  <span style={{ fontSize: "13px", fontWeight: "700", color: isAnonim ? "white" : "#374151" }}>Kirim sebagai Anonim</span>
+                  <div style={{ width: "36px", height: "20px", borderRadius: "10px", background: isAnonim ? "#C8392B" : "#E5E7EB", position: "relative", transition: "all 0.2s" }}>
+                    <div style={{ position: "absolute", top: "2px", left: isAnonim ? "18px" : "2px", width: "16px", height: "16px", borderRadius: "50%", background: "white", transition: "all 0.2s" }} />
+                  </div>
+                </button>
                 <button onClick={handleKirimUlasan}
                   disabled={!rating || loading}
                   style={{ width: "100%", padding: "11px", borderRadius: "10px", border: "none",
@@ -345,7 +359,7 @@ function KaryaModal({ item, onClose, onBuatSepertiIni, akun, pesananList = [] })
                     alignItems: "flex-start", marginBottom: "6px" }}>
                     <div>
                       <div style={{ fontWeight: "800", fontSize: "13px", color: "#0A0A0A" }}>
-                        {u.nama_user}
+                        { u.is_anonim ? "Anonim" : (u.nama_user || "Pengguna") }
                       </div>
                       <div style={{ fontSize: "10px", color: "#9CA3AF", marginTop: "2px" }}>
                         {new Date(u.created_at).toLocaleDateString("id-ID", {
@@ -355,9 +369,9 @@ function KaryaModal({ item, onClose, onBuatSepertiIni, akun, pesananList = [] })
                     </div>
                     <StarRating value={u.rating} readonly />
                   </div>
-                  {u.komentar && (
+                  {u.teks && (
                     <div style={{ fontSize: "13px", color: "#374151", lineHeight: 1.5 }}>
-                      {u.komentar}
+                      {u.teks}
                     </div>
                   )}
                 </div>

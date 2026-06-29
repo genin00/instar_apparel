@@ -14,6 +14,9 @@ const config = {
   },
 
   // ── KONTAK ─────────────────────────────────────────────
+  fonnte: {
+    token: "WUhXE4kf2YdaZmkjvrFmcsnPBrrsKEAvvjF",
+  },
   whatsapp: {
     bisnis:   "6288242110537",
     desainer: "6281230220456",

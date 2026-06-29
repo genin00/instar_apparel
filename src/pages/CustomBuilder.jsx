@@ -233,7 +233,7 @@ function DesignCanvas({ uploadSrc, zona, warna, produkId, side, onUploadClick, o
             left: `${PRINT_AREA.left}%`, top: `${PRINT_AREA.top}%`,
             width: `${PRINT_AREA.right - PRINT_AREA.left}%`,
             height: `${PRINT_AREA.bottom - PRINT_AREA.top}%`,
-            border: "1.5px dashed rgba(10,10,10,0.25)",
+            border: "1px dashed rgba(10,10,10,0.15)",
             borderRadius: "4px",
             pointerEvents: "none",
           }} />
@@ -241,7 +241,7 @@ function DesignCanvas({ uploadSrc, zona, warna, produkId, side, onUploadClick, o
             position: "absolute", left: `${PRINT_AREA.left}%`, top: `calc(${PRINT_AREA.top}% - 14px)`,
             fontSize: "9px", color: "#9CA3AF", fontWeight: "700",
             letterSpacing: "0.5px", pointerEvents: "none",
-          }}>MAKS. A4 · {zona === "depan" ? "DEPAN" : "BELAKANG"}</div>
+          }}>Area Cetak</div>
         </>
       )}
 
@@ -298,14 +298,14 @@ function DesignCanvas({ uploadSrc, zona, warna, produkId, side, onUploadClick, o
       ) : (
         /* Belum ada desain — overlay tombol upload di atas mockup */
         <button onClick={onUploadClick} style={{
-          position: "absolute", left: "50%", top: "50%", transform: "translate(-50%,-50%)",
+          position: "absolute", left: "50%", bottom: "12px", top: "auto", transform: "translateX(-50%)",
           display: "flex", flexDirection: "column", alignItems: "center", gap: "6px",
-          padding: "16px 22px", borderRadius: "12px", border: "none",
+          padding: "10px 16px", borderRadius: "10px", border: "none",
           background: "rgba(10,10,10,0.8)", color: "white", cursor: "pointer",
         }}>
-          <span style={{ fontSize: "22px" }}>📁</span>
-          <span style={{ fontWeight: "800", fontSize: "13px" }}>Upload Desain</span>
-          <span style={{ fontSize: "10px", color: "#D1D5DB" }}>PNG, JPG · maks 10MB</span>
+          <span style={{ fontSize: "14px" }}>↑</span>
+          <span style={{ fontWeight: "800", fontSize: "12px" }}>Upload Desain</span>
+          
         </button>
       )}
     </div>
@@ -709,7 +709,7 @@ export default function CustomBuilder({ produk, onBack, onTambahKeranjang, onSte
                       fontWeight: activeZona===a.id ? "800" : "400",
                       fontSize:"13px", cursor:"pointer",
                     }}>
-                      {a.id === "depan" ? "👕 Depan" : "🔄 Belakang"}
+                      {a.id === "depan" ? "Depan" : "Belakang"}
                       {uploads[a.id] && <span style={{ marginLeft:"4px", color:"#10B981" }}>✓</span>}
                     </button>
                   ))}
@@ -916,7 +916,7 @@ export default function CustomBuilder({ produk, onBack, onTambahKeranjang, onSte
             <div style={{ ...S.sub, marginBottom:"16px" }}>Tentukan ukuran dan jumlah pesanan</div>
             <div style={{ display:"flex", background:"#E5E7EB", borderRadius:"10px",
               padding:"3px", marginBottom:"14px", gap:"3px" }}>
-              {[["satuan","👕 Satuan"],["massal","📦 Massal"]].map(([m,l]) => (
+              {[["satuan","Satuan"],["massal","Grup"]].map(([m,l]) => (
                 <button key={m} onClick={() => setModeUkuran(m)} style={{
                   flex:1, padding:"9px", borderRadius:"8px", border:"none",
                   background:modeUkuran===m?"white":"transparent",
@@ -932,10 +932,10 @@ export default function CustomBuilder({ produk, onBack, onTambahKeranjang, onSte
                   {ukuranTersedia.map(sz => (
                     <button key={sz} onClick={() => setSatuanSize(sz)} style={{
                       padding:"8px 16px", borderRadius:"10px", border:"2px solid",
-                      borderColor:satuanSize===sz?"#C8392B":"#E5E7EB",
-                      background:satuanSize===sz?"#FEF2F2":"white",
+                      borderColor:satuanSize===sz?"#0A0A0A":"#E5E7EB",
+                      background:satuanSize===sz?"#0A0A0A":"white",
                       fontWeight:"800", fontSize:"13px", cursor:"pointer",
-                      color:satuanSize===sz?"#C8392B":"#0A0A0A" }}>{sz}</button>
+                      color:satuanSize===sz?"#FFFFFF":"#0A0A0A" }}>{sz}</button>
                   ))}
                 </div>
                 <div style={S.label}>Jumlah</div>
