@@ -21,6 +21,23 @@ export default function App() {
     return () => subscription.unsubscribe();
   }, []);
 
+  // ── Handle tombol back Android ──────────────────────────────
+  useEffect(() => {
+    window.history.pushState({ page: 1 }, "", window.location.href);
+    window.history.pushState({ page: 2 }, "", window.location.href);
+
+    const handlePopState = () => {
+      window.history.pushState({ page: 2 }, "", window.location.href);
+      if (halaman === "chat") {
+        setHalaman("dashboard");
+        setConvAktif(null);
+      }
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [halaman]);
+
   const handleBukaPesanan = (conv) => {
     setConvAktif(conv);
     setHalaman("chat");

@@ -13,11 +13,35 @@ export const getConversationByOrder = async (orderId) => {
 
 // Ambil semua conversations (untuk dashboard badge)
 export const getAllConversations = async () => {
-  const { data } = await supabase
+  const { data: convs } = await supabase
     .from("conversations")
     .select("*")
     .order("last_at", { ascending: false });
-  return data || [];
+  if (!convs || convs.length === 0) return [];
+
+  // Ambil nama customer dari profiles
+  const customerIds = [...new Set(convs.map(c => c.customer_id).filter(Boolean))];
+  const { data: profiles } = await supabase
+    .from("profiles")
+    .select("id, nama")
+    .in("id", customerIds);
+
+  // Ambil status pesanan
+  const orderIds = convs.map(c => c.order_id).filter(Boolean);
+  const { data: pesanan } = orderIds.length > 0 ? await supabase
+    .from("pesanan")
+    .select("order_id, status, total_harga")
+    .in("order_id", orderIds) : { data: [] };
+
+  const profileMap = Object.fromEntries((profiles || []).map(p => [p.id, p.nama]));
+  const pesananMap = Object.fromEntries((pesanan || []).map(p => [p.order_id, p]));
+
+  return convs.map(c => ({
+    ...c,
+    customerNama: profileMap[c.customer_id] || "Customer",
+    pesananStatus: pesananMap[c.order_id]?.status || null,
+    pesananHarga: pesananMap[c.order_id]?.total_harga || 0,
+  }));
 };
 
 // Ambil pesan dalam conversation

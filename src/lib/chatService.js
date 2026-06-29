@@ -24,7 +24,7 @@ export async function getOrCreateConversation(customerId, orderId = null, metada
   if (existing && existing.length > 0) {
     const conv = existing[0];
     // Update metadata kalau masih null
-    if (!conv.metadata && metadata) {
+    if (metadata) {
       await supabase
         .from("conversations")
         .update({ metadata })

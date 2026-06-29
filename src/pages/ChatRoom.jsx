@@ -7,6 +7,7 @@ import {
   getMessages, sendMessage, markAsRead,
   subscribeToMessages, uploadChatImage,
 } from "../lib/chatService.js";
+import { supabase } from "../lib/supabase.js";
 
 function formatWaktu(iso) {
   if (!iso) return "";
@@ -48,6 +49,11 @@ export default function ChatRoom({ akun, conversation, onBack, onAccDesain }) {
   const [previewImg,  setPreviewImg]  = useState(null);
   const [lightbox,    setLightbox]    = useState(null);
   const [accDone,     setAccDone]     = useState(false);
+  const [popupMsg,    setPopupMsg]    = useState(null);
+  const [editingMsg,  setEditingMsg]  = useState(null);
+  const [editTeks,    setEditTeks]    = useState("");
+  const [hapusModal,  setHapusModal]  = useState(null);
+  const longPressRef = useRef(null);
   const bottomRef  = useRef(null);
   const fileRef    = useRef(null);
   const inputRef   = useRef(null);
@@ -165,6 +171,75 @@ export default function ChatRoom({ akun, conversation, onBack, onAccDesain }) {
     }
   };
 
+  const handleLongPress = (msg) => {
+    const isMe = msg.sender_role === "customer";
+    if (!isMe) return;
+    if (msg.type && msg.type !== "text") return;
+    setPopupMsg(msg);
+  };
+
+  const startLongPress = (msg) => {
+    longPressRef.current = setTimeout(() => handleLongPress(msg), 500);
+  };
+
+  const cancelLongPress = () => {
+    if (longPressRef.current) clearTimeout(longPressRef.current);
+  };
+
+  const handleEdit = () => {
+    setEditTeks(popupMsg.body || "");
+    setEditingMsg(popupMsg);
+    setPopupMsg(null);
+  };
+
+  const handleSimpanEdit = async () => {
+    if (!editTeks.trim()) return;
+    try {
+      await supabase.from("messages").update({
+        body: editTeks.trim(),
+        is_edited: true,
+        edited_at: new Date().toISOString(),
+      }).eq("id", editingMsg.id);
+      setMessages(prev => prev.map(m => m.id === editingMsg.id
+        ? { ...m, body: editTeks.trim(), is_edited: true }
+        : m
+      ));
+      setEditingMsg(null);
+      setEditTeks("");
+    } catch(e) { alert("Gagal edit: " + e.message); }
+  };
+
+  const handleHapusSaya = async () => {
+    try {
+      const msg = hapusModal;
+      const existing = msg.deleted_for || [];
+      await supabase.from("messages").update({
+        deleted_for: [...existing, akun.id],
+      }).eq("id", msg.id);
+      setMessages(prev => prev.map(m => m.id === msg.id
+        ? { ...m, deleted_for: [...(m.deleted_for || []), akun.id] }
+        : m
+      ));
+      setHapusModal(null);
+    } catch(e) { alert("Gagal hapus: " + e.message); }
+  };
+
+  const handleHapusSemua = async () => {
+    try {
+      const msg = hapusModal;
+      await supabase.from("messages").update({
+        body: null,
+        image_url: null,
+        deleted_for: ["all"],
+      }).eq("id", msg.id);
+      setMessages(prev => prev.map(m => m.id === msg.id
+        ? { ...m, body: null, image_url: null, deleted_for: ["all"] }
+        : m
+      ));
+      setHapusModal(null);
+    } catch(e) { alert("Gagal hapus: " + e.message); }
+  };
+
   const grouped = groupByTanggal(messages);
 
   return (
@@ -268,23 +343,39 @@ export default function ChatRoom({ akun, conversation, onBack, onAccDesain }) {
             }
 
             const showRead = isMe && msg.is_read;
+            const dihapusSemua = (msg.deleted_for || []).includes("all");
+            const dihapusSaya  = (msg.deleted_for || []).includes(akun.id);
+            if (dihapusSaya && !dihapusSemua) return null;
 
             return (
               <div key={msg.id} style={{ display: "flex", justifyContent: isMe ? "flex-end" : "flex-start", marginBottom: "6px" }}>
-                <div style={{ maxWidth: "75%" }}>
+                <div style={{ maxWidth: "75%" }}
+                  onTouchStart={() => startLongPress(msg)}
+                  onTouchEnd={cancelLongPress}
+                  onTouchMove={cancelLongPress}
+                  onMouseDown={() => startLongPress(msg)}
+                  onMouseUp={cancelLongPress}
+                  onMouseLeave={cancelLongPress}
+                >
                   <div style={{
-                    background: isMe ? "#0A0A0A" : "white",
-                    color: isMe ? "white" : "#0A0A0A",
+                    background: dihapusSemua ? "#F3F4F6" : isMe ? "#0A0A0A" : "white",
+                    color: dihapusSemua ? "#9CA3AF" : isMe ? "white" : "#0A0A0A",
                     borderRadius: isMe ? "18px 18px 4px 18px" : "18px 18px 18px 4px",
-                    padding: msg.image_url && !msg.body ? "4px" : "10px 14px",
+                    padding: msg.image_url && !msg.body && !dihapusSemua ? "4px" : "10px 14px",
                     fontSize: "13px", lineHeight: 1.5,
                     boxShadow: "0 1px 2px rgba(0,0,0,0.06)", overflow: "hidden",
+                    fontStyle: dihapusSemua ? "italic" : "normal",
                   }}>
-                    {msg.image_url && (
-                      <img src={msg.image_url} alt="gambar" onClick={() => setLightbox(msg.image_url)}
-                        style={{ width: "100%", maxWidth: "220px", borderRadius: "12px", display: "block", cursor: "pointer", marginBottom: msg.body ? "8px" : "0" }} />
+                    {dihapusSemua ? "Pesan telah dihapus" : (
+                      <>
+                        {msg.image_url && (
+                          <img src={msg.image_url} alt="gambar" onClick={() => setLightbox(msg.image_url)}
+                            style={{ width: "100%", maxWidth: "220px", borderRadius: "12px", display: "block", cursor: "pointer", marginBottom: msg.body ? "8px" : "0" }} />
+                        )}
+                        {msg.body && <span>{msg.body}</span>}
+                        {msg.is_edited && <span style={{ fontSize: "10px", opacity: 0.6, marginLeft: "6px" }}>Diedit</span>}
+                      </>
                     )}
-                    {msg.body && <span>{msg.body}</span>}
                   </div>
                   <div style={{ display: "flex", justifyContent: isMe ? "flex-end" : "flex-start", alignItems: "center", gap: "4px", marginTop: "3px", padding: "0 4px" }}>
                     <span style={{ fontSize: "10px", color: "#9CA3AF" }}>{formatWaktu(msg.created_at)}</span>
@@ -338,6 +429,56 @@ export default function ChatRoom({ akun, conversation, onBack, onAccDesain }) {
           )}
         </button>
       </div>
+
+      {/* POPUP MENU */}
+      {popupMsg && (
+        <div onClick={() => setPopupMsg(null)} style={{ position: "fixed", inset: 0, zIndex: 998, background: "rgba(0,0,0,0.4)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: "white", borderRadius: "16px", overflow: "hidden", minWidth: "200px", boxShadow: "0 8px 32px rgba(0,0,0,0.2)" }}>
+            {popupMsg.body && !popupMsg.image_url && (
+              <button onClick={handleEdit} style={{ width: "100%", padding: "16px", background: "none", border: "none", borderBottom: "1px solid #F2F2F0", fontSize: "14px", fontWeight: "700", color: "#0A0A0A", cursor: "pointer", textAlign: "left" }}>
+                Edit Pesan
+              </button>
+            )}
+            <button onClick={() => { setHapusModal(popupMsg); setPopupMsg(null); }} style={{ width: "100%", padding: "16px", background: "none", border: "none", fontSize: "14px", fontWeight: "700", color: "#C8392B", cursor: "pointer", textAlign: "left" }}>
+              Hapus Pesan
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL HAPUS */}
+      {hapusModal && (
+        <div onClick={() => setHapusModal(null)} style={{ position: "fixed", inset: 0, zIndex: 998, background: "rgba(0,0,0,0.4)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: "white", borderRadius: "20px 20px 0 0", padding: "24px", width: "100%", maxWidth: "480px" }}>
+            <div style={{ fontWeight: "800", fontSize: "15px", color: "#0A0A0A", marginBottom: "6px" }}>Hapus Pesan</div>
+            <div style={{ fontSize: "12px", color: "#9CA3AF", marginBottom: "20px" }}>Pilih cara menghapus pesan</div>
+            <button onClick={handleHapusSaya} style={{ width: "100%", padding: "13px", border: "1.5px solid #E5E7EB", borderRadius: "12px", background: "none", fontSize: "13px", fontWeight: "700", color: "#374151", cursor: "pointer", marginBottom: "10px" }}>
+              Hapus untuk Saya
+            </button>
+            <button onClick={handleHapusSemua} style={{ width: "100%", padding: "13px", border: "none", borderRadius: "12px", background: "#C8392B", fontSize: "13px", fontWeight: "700", color: "white", cursor: "pointer", marginBottom: "10px" }}>
+              Hapus untuk Semua
+            </button>
+            <button onClick={() => setHapusModal(null)} style={{ width: "100%", padding: "13px", border: "none", borderRadius: "12px", background: "none", fontSize: "13px", color: "#9CA3AF", cursor: "pointer" }}>
+              Batal
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* EDIT PESAN */}
+      {editingMsg && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 998, background: "rgba(0,0,0,0.4)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
+          <div style={{ background: "white", borderRadius: "20px 20px 0 0", padding: "24px", width: "100%", maxWidth: "480px" }}>
+            <div style={{ fontWeight: "800", fontSize: "15px", color: "#0A0A0A", marginBottom: "16px" }}>Edit Pesan</div>
+            <textarea value={editTeks} onChange={e => setEditTeks(e.target.value)}
+              style={{ width: "100%", border: "2px solid #E5E7EB", borderRadius: "12px", padding: "12px", fontSize: "14px", fontFamily: "inherit", outline: "none", resize: "none", minHeight: "100px", boxSizing: "border-box" }} />
+            <div style={{ display: "flex", gap: "10px", marginTop: "12px" }}>
+              <button onClick={() => { setEditingMsg(null); setEditTeks(""); }} style={{ flex: 1, padding: "13px", border: "1.5px solid #E5E7EB", borderRadius: "12px", background: "none", fontSize: "13px", fontWeight: "700", color: "#374151", cursor: "pointer" }}>Batal</button>
+              <button onClick={handleSimpanEdit} style={{ flex: 2, padding: "13px", border: "none", borderRadius: "12px", background: "#0A0A0A", fontSize: "13px", fontWeight: "700", color: "white", cursor: "pointer" }}>Simpan</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* LIGHTBOX */}
       {lightbox && (

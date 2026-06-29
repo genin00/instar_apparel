@@ -81,41 +81,78 @@ export default function Dashboard({ user, onLogout, onBukaPesanan }) {
             <div style={{ fontSize: "32px", marginBottom: "8px" }}>📭</div>
             <div style={{ fontWeight: "700", color: "#374151" }}>Belum ada chat masuk</div>
           </div>
-        ) : (
-          convs.map(conv => {
-            const unread = conv.unread_desainer || 0;
-            return (
-              <div key={conv.id} onClick={() => onBukaPesanan(conv)}
-                style={{
-                  background: "white", borderRadius: "14px", padding: "16px", marginBottom: "10px", cursor: "pointer",
-                  boxShadow: unread > 0 ? "0 0 0 2px #C8392B" : "0 1px 4px rgba(0,0,0,0.06)",
-                }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                    <div style={{ width: "38px", height: "38px", borderRadius: "50%", background: "#0A0A0A", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "16px", flexShrink: 0 }}>👤</div>
-                    <div>
-                      <div style={{ fontWeight: "800", fontSize: "14px", color: "#0A0A0A" }}>
-                        Customer
-                        {conv.order_id && <span style={{ fontSize: "11px", color: "#9CA3AF", fontWeight: "400", marginLeft: "6px" }}>#{conv.order_id}</span>}
-                      </div>
-                      <div style={{ fontSize: "12px", color: unread > 0 ? "#C8392B" : "#9CA3AF", marginTop: "2px", fontWeight: unread > 0 ? "700" : "400" }}>
-                        {conv.last_message || "Belum ada pesan"}
-                      </div>
-                    </div>
-                  </div>
-                  <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "4px" }}>
-                    <div style={{ fontSize: "11px", color: "#9CA3AF" }}>{formatWaktu(conv.last_at)}</div>
-                    {unread > 0 && (
-                      <div style={{ background: "#C8392B", color: "white", fontSize: "10px", fontWeight: "800", minWidth: "18px", height: "18px", borderRadius: "10px", display: "flex", alignItems: "center", justifyContent: "center", padding: "0 5px" }}>
-                        {unread > 9 ? "9+" : unread}
-                      </div>
-                    )}
-                  </div>
+        ) : (() => {
+          // Kelompokkan per customer
+          const grouped = {};
+          convs.forEach(conv => {
+            const key = conv.customer_id || "unknown";
+            if (!grouped[key]) grouped[key] = { nama: conv.customerNama || "Customer", convs: [] };
+            grouped[key].convs.push(conv);
+          });
+
+          const STATUS_LABEL = {
+            diterima: "Belum Bayar", konfirmasi: "Konfirmasi",
+            desain: "Proses Desain", produksi: "Produksi",
+            qc: "Quality Check", dikirim: "Dikirim", selesai: "Selesai",
+          };
+          const STATUS_COLOR = {
+            diterima: "#854D0E", desain: "#1D4ED8", produksi: "#166534",
+            qc: "#6D28D9", dikirim: "#0369A1", selesai: "#065F46",
+          };
+
+          return Object.entries(grouped).map(([customerId, group]) => (
+            <div key={customerId} style={{ marginBottom: "16px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "8px" }}>
+                <div style={{ width: "36px", height: "36px", borderRadius: "50%", background: "#0A0A0A", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: "900", fontSize: "14px", flexShrink: 0 }}>
+                  {group.nama.charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <div style={{ fontWeight: "800", fontSize: "14px", color: "#0A0A0A" }}>{group.nama}</div>
+                  <div style={{ fontSize: "11px", color: "#9CA3AF" }}>{group.convs.length} pesanan</div>
                 </div>
               </div>
-            );
-          })
-        )}
+              {group.convs.map(conv => {
+                const unread = conv.unread_desainer || 0;
+                const lastMsg = conv.last_message || "Belum ada pesan";
+                const displayMsg = lastMsg.startsWith("STATUS_UPDATE:") ? "📦 Status diupdate" :
+                  lastMsg === "ACC_REQUEST" ? "✅ ACC Request" : lastMsg;
+                return (
+                  <div key={conv.id} onClick={() => onBukaPesanan(conv)}
+                    style={{
+                      background: "white", borderRadius: "12px", padding: "12px 14px",
+                      marginBottom: "6px", marginLeft: "46px", cursor: "pointer",
+                      boxShadow: unread > 0 ? "0 0 0 2px #C8392B" : "0 1px 4px rgba(0,0,0,0.06)",
+                      display: "flex", justifyContent: "space-between", alignItems: "center",
+                    }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "3px" }}>
+                        <span style={{ fontWeight: "800", fontSize: "13px", color: "#0A0A0A" }}>
+                          #{conv.order_id || "—"}
+                        </span>
+                        {conv.pesananStatus && (
+                          <span style={{ fontSize: "10px", fontWeight: "700", color: STATUS_COLOR[conv.pesananStatus] || "#6B7280", background: "#F3F4F6", padding: "2px 8px", borderRadius: "20px" }}>
+                            {STATUS_LABEL[conv.pesananStatus] || conv.pesananStatus}
+                          </span>
+                        )}
+                      </div>
+                      <div style={{ fontSize: "12px", color: unread > 0 ? "#C8392B" : "#9CA3AF", fontWeight: unread > 0 ? "700" : "400" }}>
+                        {displayMsg}
+                      </div>
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "4px" }}>
+                      <div style={{ fontSize: "11px", color: "#9CA3AF" }}>{formatWaktu(conv.last_at)}</div>
+                      {unread > 0 && (
+                        <div style={{ background: "#C8392B", color: "white", fontSize: "10px", fontWeight: "800", minWidth: "18px", height: "18px", borderRadius: "10px", display: "flex", alignItems: "center", justifyContent: "center", padding: "0 5px" }}>
+                          {unread > 9 ? "9+" : unread}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ));
+        })()}
 
         <button onClick={loadAll} style={{ width: "100%", padding: "12px", marginTop: "8px", background: "white", border: "2px solid #E5E7EB", borderRadius: "12px", fontSize: "13px", fontWeight: "700", color: "#6B7280", cursor: "pointer" }}>
           🔄 Refresh
