@@ -2,11 +2,12 @@ import { useState } from "react";
 import Header from "../../components/Header.jsx";
 import { InstarLogo } from "../../components/Header.jsx";
 import { kirimOTP, verifikasiOTP } from "../../services/otpService.js";
-import { register, login, resetPassword } from "../../lib/auth.js";
+import { register, login, loginFleksibel, resetPassword } from "../../lib/auth.js";
 
 function HalamanAuth() {
   const [layar, setLayar] = useState("utama"); // utama | daftar-hp | daftar-email | login
   const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [nama, setNama] = useState("");
   const [noHp, setNoHp] = useState("");
@@ -43,13 +44,13 @@ function HalamanAuth() {
 
   // ── LOGIN ──
   const handleLogin = async () => {
-    if (!email.trim()) { setError("Email tidak boleh kosong"); return; }
+    if (!identifier.trim()) { setError("Email / No HP / Username tidak boleh kosong"); return; }
     if (!password.trim()) { setError("Password tidak boleh kosong"); return; }
     reset(); setLoading(true);
     try {
-      await login({ email: email.trim(), password });
+      await loginFleksibel({ identifier: identifier.trim(), password });
     } catch (e) {
-      setError(e.message || "Email atau password salah.");
+      setError(e.message || "Identitas atau password salah.");
     } finally { setLoading(false); }
   };
 
@@ -183,9 +184,9 @@ function HalamanAuth() {
         <Header halaman="akun" judul="Lupa Sandi" onBack={() => { setResetMode(false); reset(); }} />
         <div style={{ padding: "32px 20px 0", maxWidth: "480px", margin: "0 auto" }}>
           <div style={{ background: "white", borderRadius: "16px", padding: "20px", marginBottom: "14px" }}>
-            <div style={{ fontWeight: "600", fontSize: "12px", color: "#374151", marginBottom: "6px" }}>Email</div>
-            <input value={email} onChange={e => { setEmail(e.target.value); reset(); }}
-              placeholder="email@contoh.com" type="email" style={S.input} />
+            <div style={{ fontWeight: "600", fontSize: "12px", color: "#374151", marginBottom: "6px" }}>Email / No HP / Username</div>
+            <input value={identifier} onChange={e => { setIdentifier(e.target.value); reset(); }}
+              placeholder="Email, 08xx, atau username" type="text" style={S.input} />
             {error && <div style={{ fontSize: "12px", color: "#C8392B", marginTop: "8px" }}>⚠️ {error}</div>}
             {info && <div style={{ fontSize: "12px", color: "#10B981", marginTop: "8px" }}>✅ {info}</div>}
           </div>
@@ -211,9 +212,9 @@ function HalamanAuth() {
             <div style={{ fontSize: "13px", color: "#9CA3AF", marginTop: "4px" }}>Masuk untuk melanjutkan</div>
           </div>
           <div style={{ background: "white", borderRadius: "16px", padding: "20px", marginBottom: "14px" }}>
-            <div style={{ fontWeight: "600", fontSize: "12px", color: "#374151", marginBottom: "6px" }}>Email</div>
-            <input value={email} onChange={e => { setEmail(e.target.value); reset(); }}
-              placeholder="email@contoh.com" type="email" style={S.input} />
+            <div style={{ fontWeight: "600", fontSize: "12px", color: "#374151", marginBottom: "6px" }}>Email / No HP / Username</div>
+            <input value={identifier} onChange={e => { setIdentifier(e.target.value); reset(); }}
+              placeholder="Email, 08xx, atau username" type="text" style={S.input} />
             <div style={{ fontWeight: "600", fontSize: "12px", color: "#374151", marginBottom: "6px" }}>Password</div>
             <input value={password} onChange={e => { setPassword(e.target.value); reset(); }}
               placeholder="Password" type="password" style={{ ...S.input, marginBottom: 0 }} />

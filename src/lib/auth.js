@@ -11,6 +11,16 @@ export async function register({ email, password, nama, noHp }) {
     options: { data: { nama, no_hp: noHp || "" } },
   });
   if (error) throw error;
+
+  // Simpan email & no_hp ke tabel profiles
+  if (data?.user) {
+    await supabase.from("profiles").upsert({
+      id: data.user.id,
+      nama: nama || "",
+      email: email || "",
+      no_hp: noHp || "",
+    });
+  }
   return data;
 }
 
