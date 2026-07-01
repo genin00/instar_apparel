@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { warnaKaos } from "../../data/products.js";
 
 function ColorPicker({ warna, setWarna }) {
   const [showCustom, setShowCustom] = useState(false);

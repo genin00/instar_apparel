@@ -2,7 +2,7 @@ import { useState } from "react";
 import Header from "../../components/Header.jsx";
 import { InstarLogo } from "../../components/Header.jsx";
 import { kirimOTP, verifikasiOTP } from "../../services/otpService.js";
-import { register, login, loginFleksibel, resetPassword } from "../../lib/auth.js";
+import { register, login, loginFleksibel, resetPassword, loginWithGoogle } from "../../lib/auth.js";
 
 function HalamanAuth() {
   const [layar, setLayar] = useState("utama"); // utama | daftar-hp | daftar-email | login
@@ -122,10 +122,7 @@ function HalamanAuth() {
 
   const handleGoogle = async () => {
     try {
-      const { supabase } = await import("../../lib/supabase.js");
-      await supabase.auth.signInWithOAuth({ provider: "google",
-        options: { redirectTo: window.location.origin }
-      });
+      await loginWithGoogle();
     } catch (e) { setError("Gagal login Google: " + e.message); }
   };
 

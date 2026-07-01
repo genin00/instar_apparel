@@ -2,7 +2,7 @@
 //  INSTAR APPAREL — LOGIN POPUP
 // ═══════════════════════════════════════════════════════════
 import { useState } from "react";
-import { supabase } from "../lib/supabase.js";
+import { login, register } from "../lib/auth.js";
 
 export default function LoginPopup({ onClose, onSuccess, pesan = "Login untuk melanjutkan" }) {
   const [mode,     setMode]     = useState("login"); // login | daftar
@@ -17,18 +17,12 @@ export default function LoginPopup({ onClose, onSuccess, pesan = "Login untuk me
     setError("");
     if (!email || !password) { setError("Email dan password wajib diisi"); return; }
     if (mode === "daftar" && !nama) { setError("Nama wajib diisi"); return; }
-
     setLoading(true);
     try {
       if (mode === "login") {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
+        await login({ email, password });
       } else {
-        const { error } = await supabase.auth.signUp({
-          email, password,
-          options: { data: { nama, no_wa: noWA, role: "customer" } }
-        });
-        if (error) throw error;
+        await register({ email, password, nama, noHp: noWA });
       }
       onSuccess?.();
       onClose?.();

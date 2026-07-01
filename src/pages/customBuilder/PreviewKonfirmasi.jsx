@@ -1,4 +1,5 @@
 import MockupKaos from "./MockupKaos.jsx";
+import { MOCKUP_MAP, getShirtFilter } from "../../lib/mockupHelpers.js";
 
 function PreviewKonfirmasi({ warna, produk, opsiDesain, uploads, posisiDesain }) {
   const hasDepan    = opsiDesain === "upload" && uploads?.depan;

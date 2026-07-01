@@ -207,3 +207,20 @@ export async function loginFleksibel({ identifier, password }) {
   const email = await getEmailByIdentifier(identifier);
   return await login({ email, password });
 }
+
+// ── GOOGLE OAUTH ──────────────────────────────────────────────
+export async function loginWithGoogle() {
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: { redirectTo: window.location.origin },
+  });
+  if (error) throw error;
+}
+
+// ── AUTH STATE LISTENER ───────────────────────────────────────
+export function onAuthStateChange(callback) {
+  const { data: { subscription } } = supabase.auth.onAuthStateChange(
+    (event, session) => callback(session)
+  );
+  return subscription;
+}

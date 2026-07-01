@@ -1,4 +1,5 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { MOCKUP_MAP, getShirtFilter, PRINT_AREA } from "../../lib/mockupHelpers.js";
 
 // helper
 const rp = (n) => "Rp " + n.toLocaleString("id-ID");

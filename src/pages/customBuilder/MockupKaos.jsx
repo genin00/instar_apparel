@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { MOCKUP_MAP, getShirtFilter } from "../../lib/mockupHelpers.js";
 
 function MockupKaos({ warna, produkId, side }) {
   const src = MOCKUP_MAP[produkId]?.[side] || "/mockup-pendek.png";

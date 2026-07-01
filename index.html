@@ -12,6 +12,10 @@
       navigator.serviceWorker.register('/sw.js');
     }
   </script>
+<script>
+window.onerror=function(msg,url,line,col,err){document.body.innerHTML="<pre style=\"color:red;padding:16px;font-size:11px;white-space:pre-wrap\">"+msg+"\n"+url+":"+line+":"+col+"\n\n"+(err&&err.stack?err.stack:"")+"</pre>";};
+window.addEventListener("unhandledrejection",function(e){document.body.innerHTML="<pre style=\"color:red;padding:16px;font-size:11px;white-space:pre-wrap\">PROMISE ERROR:\n"+(e.reason&&e.reason.stack?e.reason.stack:e.reason)+"</pre>";});
+</script>
 </head>
 <body>
   <div id="root"></div>
