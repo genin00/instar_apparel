@@ -3,10 +3,10 @@
 // ═══════════════════════════════════════════════════════════
 
 import { useState } from "react";
-import Header from "../components/Header.jsx";
-import config from "../config.js";
-import { ukuranTersedia } from "../data/products.js";
-import { saveOrder } from "../services/orderService.js";
+import Header from "../../components/Header.jsx";
+import config from "../../config.js";
+import { ukuranTersedia } from "../../data/products.js";
+import { saveOrder } from "../../services/orderService.js";
 
 import { rp, getShirtFilter, hitungDiskon, cekVoucher } from "./utilCheckout.js";
 import { IconCart, IconTag, IconCheck, IconChevronDown, IconStore, IconBike, IconTruck, IconWallet, IconNote } from "./ikonCheckout.jsx";

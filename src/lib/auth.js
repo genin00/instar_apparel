@@ -172,3 +172,38 @@ export async function resetPassword(email) {
   });
   if (error) throw error;
 }
+
+// ── LOGIN FLEKSIBEL (Email / No HP / Username) ───────────────
+export async function getEmailByIdentifier(identifier) {
+  const isPhone = /^(\+62|62|08)\d{7,}$/.test(identifier.trim());
+
+  if (isPhone) {
+    const normalized = identifier.trim()
+      .replace(/^\+62/, "0")
+      .replace(/^62/, "0");
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('email')
+      .eq('no_hp', normalized)
+      .single();
+    if (error || !data) throw new Error("Nomor HP tidak ditemukan");
+    return data.email;
+  }
+
+  if (!identifier.includes("@")) {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('email')
+      .eq('username', identifier.trim())
+      .single();
+    if (error || !data) throw new Error("Username tidak ditemukan");
+    return data.email;
+  }
+
+  return identifier.trim();
+}
+
+export async function loginFleksibel({ identifier, password }) {
+  const email = await getEmailByIdentifier(identifier);
+  return await login({ email, password });
+}

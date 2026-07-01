@@ -3,7 +3,7 @@
 // ═══════════════════════════════════════════════════════════
 
 import { useState, useRef, useEffect } from "react";
-import config from "../config.js";
+import config from "../../config.js";
 
 const rp = (n) => "Rp " + (n || 0).toLocaleString("id-ID");
 

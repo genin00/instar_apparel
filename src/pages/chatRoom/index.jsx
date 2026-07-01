@@ -6,8 +6,8 @@ import { useState, useEffect, useRef } from "react";
 import {
   getMessages, sendMessage, markAsRead,
   subscribeToMessages, uploadChatImage,
-} from "../lib/chatService.js";
-import { supabase } from "../lib/supabase.js";
+} from "../../lib/chatService.js";
+import { supabase } from "../../lib/supabase.js";
 
 import { formatWaktu, formatTanggal, groupByTanggal } from "./utilChat.js";
 
