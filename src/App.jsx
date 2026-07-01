@@ -11,7 +11,7 @@ import KaryaInstar   from "./components/KaryaInstar.jsx";
 import Intro         from "./pages/Intro.jsx";
 import Beranda       from "./pages/Beranda.jsx";
 import Produk        from "./pages/Produk.jsx";
-import CustomBuilder from "./pages/CustomBuilder.jsx";
+import CustomBuilder from "./pages/customBuilder/index.jsx";
 import Keranjang     from "./pages/Keranjang.jsx";
 import Checkout      from "./pages/Checkout.jsx";
 import Pesanan       from "./pages/Pesanan.jsx";
