@@ -19,7 +19,7 @@ import Wishlist      from "./pages/Wishlist.jsx";
 import config from "./config.js";
 import { saveOrder, getOrders } from "./services/orderService.js";
 import TulisReview   from "./pages/TulisReview.jsx";
-import Akun          from "./pages/Akun.jsx";
+import Akun from "./pages/akun/index.jsx";
 import LoginPopup    from "./components/LoginPopup.jsx";
 import ChatCenter    from "./pages/ChatCenter.jsx";
 import PromoPopup    from "./components/PromoPopup.jsx";

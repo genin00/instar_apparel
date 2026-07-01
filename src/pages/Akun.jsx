@@ -344,6 +344,7 @@ function HalamanAuth() {
             {[
               { label: "Nama Lengkap", val: nama, set: setNama, ph: "Nama lengkap", type: "text" },
               { label: "No. HP (WhatsApp)", val: noHp, set: setNoHp, ph: "08xxxxxxxxxx", type: "tel" },
+              { label: "Password", val: password, set: setPassword, ph: "Minimal 6 karakter", type: "password" },
             ].map((f, i, arr) => (
               <div key={f.label}>
                 <div style={{ fontWeight: "600", fontSize: "12px", color: "#374151", marginBottom: "6px" }}>{f.label}</div>
