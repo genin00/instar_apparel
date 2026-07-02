@@ -13,11 +13,12 @@ import SubHalaman from "./router/SubHalaman.jsx";
 import { initPushNotification } from "./services/pushNotification.js";
 
 export default function AppInner({ akun, setAkun, profilUser, setProfilUser }) {
-  useEffect(() => {
-    if (akun) {
-      initPushNotification("customer", akun);
-    }
-  }, [akun]);
+  // Push notification sementara dimatikan karena menyebabkan crash setelah permission.
+  // useEffect(() => {
+  //   if (akun) {
+  //     initPushNotification("customer", akun);
+  //   }
+  // }, [akun]);
 
   const { pesananList, setPesananList, pesananFilter, setPesananFilter, refreshPesanan } = usePesanan(akun);
 
