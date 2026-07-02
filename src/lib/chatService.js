@@ -13,11 +13,17 @@ export async function getOrCreateConversation(customerId, orderId = null, metada
     .from("conversations")
     .select("*")
     .eq("customer_id", customerId)
-    .eq("status", "open")
+    .eq("status", "open");
+
+  if (orderId) {
+    query = query.eq("order_id", orderId);
+  } else {
+    query = query.is("order_id", null);
+  }
+
+  query = query
     .order("last_at", { ascending: false })
     .limit(1);
-
-  if (orderId) query = query.eq("order_id", orderId);
 
   const { data: existing, error: findErr } = await query;
   if (findErr) throw findErr;
@@ -202,3 +208,30 @@ export async function getTotalUnread(customerId) {
   return (data || []).reduce((sum, c) => sum + (c.unread_customer || 0), 0);
 }
 
+
+// ── EDIT PESAN ────────────────────────────────────────────────
+export async function editMessage(id, teks) {
+  const { error } = await supabase
+    .from("messages")
+    .update({ body: teks, is_edited: true, edited_at: new Date().toISOString() })
+    .eq("id", id);
+  if (error) throw error;
+}
+
+// ── HAPUS PESAN UNTUK SAYA ───────────────────────────────────
+export async function deleteMessageForMe(id, deletedFor) {
+  const { error } = await supabase
+    .from("messages")
+    .update({ deleted_for: deletedFor })
+    .eq("id", id);
+  if (error) throw error;
+}
+
+// ── HAPUS PESAN UNTUK SEMUA ───────────────────────────────────
+export async function deleteMessageForAll(id) {
+  const { error } = await supabase
+    .from("messages")
+    .update({ body: null, image_url: null, deleted_for: ["all"] })
+    .eq("id", id);
+  if (error) throw error;
+}

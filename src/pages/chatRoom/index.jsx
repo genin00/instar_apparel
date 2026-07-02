@@ -6,8 +6,8 @@ import { useState, useEffect, useRef } from "react";
 import {
   getMessages, sendMessage, markAsRead,
   subscribeToMessages, uploadChatImage,
+  editMessage, deleteMessageForMe, deleteMessageForAll,
 } from "../../lib/chatService.js";
-import { supabase } from "../../lib/supabase.js";
 
 import { formatWaktu, formatTanggal, groupByTanggal } from "./utilChat.js";
 
@@ -55,20 +55,27 @@ export default function ChatRoom({ akun, conversation, onBack, onAccDesain }) {
 
   const loadMessages = async () => {
     try {
+      console.log("=== CHAT DEBUG ===");
+      console.log("Conversation ID:", conversation.id);
+
       const data = await getMessages(conversation.id);
+
+      console.log("Jumlah pesan:", data.length);
+      console.log("Semua pesan:", data);
+
       setMessages(data);
-      // Cek apakah sudah ada acc_request yang di-acc
+
       const sudahAcc = data.some(m => m.type === "acc_done");
       setAccDone(sudahAcc);
-      // Kalau sudah acc sebelumnya, tidak auto-redirect (biarkan user lihat chat)
+
     } catch (e) {
-      console.error(e);
+      console.error("LOAD ERROR:", e);
     } finally {
       setLoading(false);
     }
   };
 
-  const scrollToBottom = () => {
+const scrollToBottom = () => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
@@ -166,11 +173,7 @@ export default function ChatRoom({ akun, conversation, onBack, onAccDesain }) {
   const handleSimpanEdit = async () => {
     if (!editTeks.trim()) return;
     try {
-      await supabase.from("messages").update({
-        body: editTeks.trim(),
-        is_edited: true,
-        edited_at: new Date().toISOString(),
-      }).eq("id", editingMsg.id);
+      await editMessage(editingMsg.id, editTeks.trim());
       setMessages(prev => prev.map(m => m.id === editingMsg.id
         ? { ...m, body: editTeks.trim(), is_edited: true }
         : m
@@ -184,9 +187,7 @@ export default function ChatRoom({ akun, conversation, onBack, onAccDesain }) {
     try {
       const msg = hapusModal;
       const existing = msg.deleted_for || [];
-      await supabase.from("messages").update({
-        deleted_for: [...existing, akun.id],
-      }).eq("id", msg.id);
+      await deleteMessageForMe(msg.id, [...existing, akun.id]);
       setMessages(prev => prev.map(m => m.id === msg.id
         ? { ...m, deleted_for: [...(m.deleted_for || []), akun.id] }
         : m
@@ -198,11 +199,7 @@ export default function ChatRoom({ akun, conversation, onBack, onAccDesain }) {
   const handleHapusSemua = async () => {
     try {
       const msg = hapusModal;
-      await supabase.from("messages").update({
-        body: null,
-        image_url: null,
-        deleted_for: ["all"],
-      }).eq("id", msg.id);
+      await deleteMessageForAll(msg.id);
       setMessages(prev => prev.map(m => m.id === msg.id
         ? { ...m, body: null, image_url: null, deleted_for: ["all"] }
         : m

@@ -1,5 +1,7 @@
 import { useState, useRef } from "react";
 import { saveOrder } from "../services/orderService.js";
+import { supabase } from "../lib/supabase.js";
+import { getOrCreateConversation } from "../lib/chatService.js";
 
 export function useCheckoutFlow({ akun, setHalaman, setPesananList, setKeranjang, requireLogin, setShowLogin }) {
   const [produkAktif, setProdukAktif]         = useState(null);
@@ -35,6 +37,21 @@ export function useCheckoutFlow({ akun, setHalaman, setPesananList, setKeranjang
       ...detail,
     };
     await saveOrder(pesananBaru);
+
+    await getOrCreateConversation(akun.id, orderId, {
+      source: "checkout",
+      totalQty: pesananBaru.totalQty,
+      totalHarga: pesananBaru.totalHarga,
+      items: pesananBaru.items,
+    });
+  const convId = checkoutItems.find(i => i.conversationId)?.conversationId;
+  if (convId) {
+    await supabase
+      .from("conversations")
+      .update({ order_id: orderId })
+      .eq("id", convId);
+  }
+
     setPesananList(prev => [pesananBaru, ...prev]);
     setKeranjang(prev => prev.filter(i => !checkoutItems.find(ci => ci.id === i.id)));
     setCheckoutItems([]);
@@ -42,22 +59,42 @@ export function useCheckoutFlow({ akun, setHalaman, setPesananList, setKeranjang
   };
 
   const handleAccDesain = async (conversation) => {
+    // Kalau order sudah ada, cukup ubah status ke produksi.
     if (conversation.order_id) {
       try {
         const { updateOrderStatus } = await import("../services/orderService.js");
         await updateOrderStatus(conversation.order_id, "produksi");
-        setPesananList(prev => prev.map(p => p.orderId === conversation.order_id ? { ...p, status: "produksi" } : p));
-      } catch {}
+        setPesananList(prev =>
+          prev.map(p =>
+            p.orderId === conversation.order_id
+              ? { ...p, status: "produksi" }
+              : p
+          )
+        );
+        return;
+      } catch (e) {
+        console.error(e);
+        return;
+      }
     }
+
+    // Belum ada order → lanjut checkout
     const meta = conversation.metadata || {};
     handleCheckout([{
-      id: 'brief-' + Date.now(), produk: meta.produk || { nama: 'Kaos Custom' },
-      nama: meta.produk?.nama || 'Kaos Custom', warna: meta.warna || null,
-      warnaLabel: meta.warnaLabel || '-', opsiDesain: 'brief',
-      briefKat: meta.briefKat || '-', briefTeks: meta.briefTeks || {},
-      modeUkuran: meta.modeUkuran || 'satuan', satuanSize: meta.satuanSize || '-',
-      satuanQty: meta.satuanQty || 1, massalQty: meta.massalQty || null,
-      totalQty: meta.totalQty || 1, totalHarga: meta.totalHarga || 0,
+      id: "brief-" + Date.now(),
+      produk: meta.produk || { nama: "Kaos Custom" },
+      nama: meta.produk?.nama || "Kaos Custom",
+      warna: meta.warna || null,
+      warnaLabel: meta.warnaLabel || "-",
+      opsiDesain: "brief",
+      briefKat: meta.briefKat || "-",
+      briefTeks: meta.briefTeks || {},
+      modeUkuran: meta.modeUkuran || "satuan",
+      satuanSize: meta.satuanSize || "-",
+      satuanQty: meta.satuanQty || 1,
+      massalQty: meta.massalQty || null,
+      totalQty: meta.totalQty || 1,
+      totalHarga: meta.totalHarga || 0,
       conversationId: conversation.id,
     }]);
   };

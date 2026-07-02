@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
+import supabase from "../../lib/supabase.js";
+import config from "../../config.js";
 
 const rp = (n) => "Rp " + (n || 0).toLocaleString("id-ID");
 
@@ -7,20 +9,16 @@ function KonfirmasiTerimaModal({ pesanan, onClose, onSelesai }) {
   const [loading, setLoading] = useState(false);
 
   const handleKonfirmasi = async () => {
+    console.log("DEBUG pesanan diterima:", pesanan);
+    console.log("DEBUG orderId:", pesanan.orderId, "order_id:", pesanan.order_id);
+
     setLoading(true);
     try {
-      const SUPABASE_URL = "https://wfgjvpbehhbuysdklimg.supabase.co";
-      const SUPABASE_KEY = "sb_publishable_savuuXHTZZp_FZuTNfKqjQ_2iKIx6ZA";
-      await fetch(`${SUPABASE_URL}/rest/v1/pesanan?order_id=eq.${pesanan.orderId}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          "apikey": SUPABASE_KEY,
-          "Authorization": `Bearer ${SUPABASE_KEY}`,
-          "Prefer": "return=minimal",
-        },
-        body: JSON.stringify({ status: "selesai" }),
-      });
+      const { error } = await supabase
+        .from("pesanan")
+        .update({ status: "selesai" })
+        .eq("order_id", pesanan.orderId);
+      if (error) throw error;
       onSelesai();
     } catch(e) {
       alert("Gagal: " + e.message);
@@ -68,18 +66,11 @@ function PengembalianModal({ pesanan, onClose, onSelesai }) {
     if (!alasan.trim()) { alert("Isi alasan pengembalian"); return; }
     setLoading(true);
     try {
-      const SUPABASE_URL = "https://wfgjvpbehhbuysdklimg.supabase.co";
-      const SUPABASE_KEY = "sb_publishable_savuuXHTZZp_FZuTNfKqjQ_2iKIx6ZA";
-      await fetch(`${SUPABASE_URL}/rest/v1/pesanan?order_id=eq.${pesanan.orderId}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          "apikey": SUPABASE_KEY,
-          "Authorization": `Bearer ${SUPABASE_KEY}`,
-          "Prefer": "return=minimal",
-        },
-        body: JSON.stringify({ status: "dikembalikan", catatan_admin: "PENGEMBALIAN: " + alasan }),
-      });
+      const { error } = await supabase
+        .from("pesanan")
+        .update({ status: "dikembalikan", catatan_admin: "PENGEMBALIAN: " + alasan })
+        .eq("order_id", pesanan.orderId);
+      if (error) throw error;
       // Buka WA untuk lapor ke CS
       const msg = encodeURIComponent("Halo, saya ingin mengajukan pengembalian pesanan #" + pesanan.orderId + " - Alasan: " + alasan);
       window.open("https://wa.me/" + config.whatsapp.bisnis + "?text=" + msg, "_blank");

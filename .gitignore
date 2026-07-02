@@ -2,3 +2,26 @@ node_modules
 dist
 .env
 *.log
+
+# Firebase
+android/app/google-services.json
+apps/desainer/android/app/google-services.json
+apps/percetakan/android/app/google-services.json
+apps/admin/android/app/google-services.json
+
+# Capacitor Android Build
+android/.gradle/
+android/build/
+android/app/build/
+
+apps/desainer/android/.gradle/
+apps/desainer/android/build/
+apps/desainer/android/app/build/
+
+apps/percetakan/android/.gradle/
+apps/percetakan/android/build/
+apps/percetakan/android/app/build/
+
+apps/admin/android/.gradle/
+apps/admin/android/build/
+apps/admin/android/app/build/

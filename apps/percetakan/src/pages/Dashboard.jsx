@@ -61,16 +61,17 @@ function KonfirmasiModal({ pesanan, onClose, onSelesai }) {
         }
       }
 
-      // Update status ke QC
-      await fetch(`${SUPABASE_URL}/rest/v1/pesanan?order_id=eq.${pesanan.order_id}`, {
-        method: "PATCH",
-        headers: { ...headers, "Prefer": "return=minimal" },
-        body: JSON.stringify({
-          status: "qc",
-          foto_produksi: fotoUrl,
-          catatan_produksi: catatan || null,
-        }),
-      });
+        // Update status ke QC
+        const { error } = await supabase
+          .from("pesanan")
+          .update({
+            status: "qc",
+            foto_produksi: fotoUrl,
+            catatan_produksi: catatan || null,
+          })
+          .eq("order_id", pesanan.order_id);
+
+        if (error) throw error;
 
       onSelesai();
     } catch(e) {
@@ -167,18 +168,21 @@ function QCModal({ pesanan, onClose, onSelesai }) {
 
   const handleQC = async () => {
     setLoading(true);
+
     try {
-      await fetch(`${SUPABASE_URL}/rest/v1/pesanan?order_id=eq.${pesanan.order_id}`, {
-        method: "PATCH",
-        headers: { ...headers, "Prefer": "return=minimal" },
-        body: JSON.stringify({
+      const { error } = await supabase
+        .from("pesanan")
+        .update({
           status: "dikirim",
           catatan_qc: catatan || null,
-        }),
-      });
+        })
+        .eq("order_id", pesanan.order_id);
+
+      if (error) throw error;
+
       onSelesai();
-    } catch(e) {
-      alert("Gagal: " + e.message);
+    } catch (e) {
+      alert("Gagal QC: " + e.message);
     } finally {
       setLoading(false);
     }
@@ -258,18 +262,26 @@ export default function Dashboard({ user, onLogout }) {
   const [tab,      setTab]      = useState("produksi");
   const [modal,    setModal]    = useState(null); // { type: 'produksi'|'qc', pesanan }
 
-  const loadPesanan = async () => {
-    setLoading(true);
-    try {
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/pesanan?status=in.(produksi,qc,dikirim,selesai)&order=created_at.desc`, { headers });
-      const data = await res.json();
-      setPesanan(data || []);
-    } catch(e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
-  };
+  
+const loadPesanan = async () => {
+  setLoading(true);
+  try {
+    const { data, error } = await supabase
+      .from("pesanan")
+      .select("*")
+      .in("status", ["produksi", "qc", "dikirim", "selesai"])
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+
+    setPesanan(data || []);
+  } catch (e) {
+    console.error("loadPesanan:", e);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   useEffect(() => {
     loadPesanan();

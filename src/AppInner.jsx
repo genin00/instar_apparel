@@ -1,6 +1,7 @@
 // ═══════════════════════════════════════════════════════════
 //  INSTAR APPAREL — APPINNER.JSX (ORKESTRATOR UTAMA)
 // ═══════════════════════════════════════════════════════════
+import { useEffect } from "react";
 import { usePesanan } from "./hooks/usePesanan.js";
 import { useNavigasi } from "./hooks/useNavigasi.js";
 import { useCartWishlist } from "./hooks/useCartWishlist.js";
@@ -9,8 +10,15 @@ import { useCheckoutFlow } from "./hooks/useCheckoutFlow.js";
 import HalamanSukses from "./pages/HalamanSukses.jsx";
 import MainLayout from "./layouts/MainLayout.jsx";
 import SubHalaman from "./router/SubHalaman.jsx";
+import { initPushNotification } from "./services/pushNotification.js";
 
 export default function AppInner({ akun, setAkun, profilUser, setProfilUser }) {
+  useEffect(() => {
+    if (akun) {
+      initPushNotification("customer", akun);
+    }
+  }, [akun]);
+
   const { pesananList, setPesananList, pesananFilter, setPesananFilter, refreshPesanan } = usePesanan(akun);
 
   const nav = useNavigasi();

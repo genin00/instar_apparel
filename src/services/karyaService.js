@@ -127,3 +127,26 @@ export const getRatingSummary = async (karyaId) => {
   const rata = data.reduce((a, d) => a + d.rating, 0) / data.length;
   return { rata: Math.round(rata * 10) / 10, total: data.length };
 };
+
+// ── ULASAN KARYA (dipakai KaryaInstar.jsx) ───────────────────
+export const getUlasanKaryaList = async (karyaId) => {
+  const { data, error } = await supabase
+    .from("karya_ulasan")
+    .select("*")
+    .eq("karya_id", karyaId)
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return data || [];
+};
+
+export const kirimUlasanKarya = async ({ karyaId, userId, rating, teks, namaUser, isAnonim }) => {
+  const { error } = await supabase.from("karya_ulasan").insert({
+    karya_id: karyaId,
+    user_id: userId,
+    rating,
+    teks,
+    nama_user: namaUser,
+    is_anonim: isAnonim,
+  });
+  if (error) throw error;
+};

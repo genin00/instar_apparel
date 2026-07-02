@@ -88,11 +88,8 @@ export default function ChatRoom({ user, conversation, pesanan, onBack }) {
   };
 
   const STATUS_OPTIONS = [
-    { id: "desain",   label: "Proses Desain",  color: "#1D4ED8" },
-    { id: "produksi", label: "Produksi",        color: "#166534" },
-    { id: "qc",       label: "Quality Check",   color: "#6D28D9" },
-    { id: "dikirim",  label: "Dikirim",         color: "#0369A1" },
-    { id: "selesai",  label: "Selesai",         color: "#065F46" },
+    { id: "qc",      label: "Quality Check", color: "#6D28D9" },
+    { id: "dikirim", label: "Dikirim",       color: "#0369A1" },
   ];
 
   const handleUpdateStatus = async (status) => {

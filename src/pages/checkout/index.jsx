@@ -6,14 +6,19 @@ import { useState } from "react";
 import Header from "../../components/Header.jsx";
 import config from "../../config.js";
 import { ukuranTersedia } from "../../data/products.js";
-import { saveOrder } from "../../services/orderService.js";
 
 import { rp, getShirtFilter, hitungDiskon, cekVoucher } from "./utilCheckout.js";
 import { IconCart, IconTag, IconCheck, IconChevronDown, IconStore, IconBike, IconTruck, IconWallet, IconNote } from "./ikonCheckout.jsx";
 
+const pengirimanIcon = {
+  toko: <IconStore />,
+  kurir: <IconBike />,
+  ekspedisi: <IconTruck />,
+};
+
 export default function Checkout({ items = [], onBack, onSelesai, akun }) {
-  const [nama,          setNama]          = useState("");
-  const [noWA,          setNoWA]          = useState("");
+  const [nama,          setNama]          = useState(akun?.user_metadata?.nama || akun?.email?.split("@")[0] || "");
+  const [noWA,          setNoWA]          = useState(akun?.noWA || "");
   const [alamat,        setAlamat]        = useState("");
   const [catatanAdmin,  setCatatanAdmin]  = useState("");
   const [pengiriman,    setPengiriman]    = useState(null);
@@ -76,7 +81,6 @@ export default function Checkout({ items = [], onBack, onSelesai, akun }) {
       customerId: akun?.id || null,
     };
 
-    await saveOrder(pesananBaru);
     setLoading(false);
     onSelesai(orderId, { nama, noWA, tipeBayar, metodeBayar, pengiriman, alamat });
   };

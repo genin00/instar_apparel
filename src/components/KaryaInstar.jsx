@@ -6,8 +6,7 @@
 import { useState, useEffect } from "react";
 import karyaData from "../data/karya.js";
 import products, { warnaKaos, ukuranTersedia } from "../data/products.js";
-import supabase from "../lib/supabase.js";
-import { isMemberKarya } from "../services/karyaService.js";
+import { isMemberKarya, getUlasanKaryaList, kirimUlasanKarya } from "../services/karyaService.js";
 
 const kategoriKarya = [
   { id: "semua",      label: "Semua" },
@@ -97,12 +96,7 @@ function KaryaModal({ item, onClose, onBuatSepertiIni, akun, pesananList = [] })
     if (!item) return;
     setLoadUlasan(true);
     try {
-      const { data } = await supabase
-        .from("karya_ulasan")
-        .select("*")
-        .eq("karya_id", item.id)
-        .order("created_at", { ascending: false });
-      const list = data || [];
+      const list = await getUlasanKaryaList(item.id);
       setUlasanList(list);
       if (list.length > 0) {
         const rata = list.reduce((a, b) => a + b.rating, 0) / list.length;
@@ -139,14 +133,13 @@ function KaryaModal({ item, onClose, onBuatSepertiIni, akun, pesananList = [] })
     if (!rating || !akun) return;
     setLoading(true);
     try {
-      await supabase.from("karya_ulasan").insert({
-        karya_id:  item.id,
-        user_id:   akun.id,
-        
+      await kirimUlasanKarya({
+        karyaId: item.id,
+        userId: akun.id,
         rating,
         teks: komentar.trim(),
-        nama_user: isAnonim ? "Anonim" : (akun.user_metadata?.nama || akun.email?.split("@")[0] || "Pengguna"),
-        is_anonim: isAnonim,
+        namaUser: isAnonim ? "Anonim" : (akun.user_metadata?.nama || akun.email?.split("@")[0] || "Pengguna"),
+        isAnonim,
       });
       setSudahUlasan(true);
       setRating(0);

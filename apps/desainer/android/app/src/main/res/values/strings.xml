@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">instar-desainer</string>
+    <string name="title_activity_main">instar-desainer</string>
+    <string name="package_name">com.instar.desainer</string>
+    <string name="custom_url_scheme">com.instar.desainer</string>
+</resources>

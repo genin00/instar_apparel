@@ -1,12 +1,11 @@
-import { useState } from "react";
+import config from "../../config.js";
+import { STATUS_COLOR, STATUS_LABEL, getShirtFilter } from "./pesananUtils.js";
 
 const rp = (n) => "Rp " + (n || 0).toLocaleString("id-ID");
-
 
 function PesananCard({ pesanan, onLihatRincian, onKonfirmasiTerima, onAjukanPengembalian, onBeriUlasan }) {
   const sc = STATUS_COLOR[pesanan.status] || STATUS_COLOR.diterima;
   const firstItem = pesanan.items?.[0];
-
   return (
     <div style={{ background: "white", borderRadius: "16px", marginBottom: "10px", overflow: "hidden" }}>
       <div style={{

@@ -38,8 +38,14 @@ export default function App() {
     return () => window.removeEventListener("popstate", handlePopState);
   }, [halaman]);
 
-  const handleBukaPesanan = (conv) => {
-    setConvAktif(conv);
+  const handleBukaPesanan = async (conv) => {
+    const { data } = await supabase
+      .from("conversations")
+      .select("*")
+      .eq("id", conv.id)
+      .single();
+
+    setConvAktif(data || conv);
     setHalaman("chat");
   };
 

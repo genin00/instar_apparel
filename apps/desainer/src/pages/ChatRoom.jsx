@@ -14,6 +14,14 @@ function formatWaktu(iso) {
 }
 
 export default function ChatRoom({ user, conversation, pesanan, onBack }) {
+
+  console.log("===== CHATROOM =====");
+  console.log(JSON.stringify(conversation, null, 2));
+
+  console.log("=== CHATROOM DEBUG ===");
+  console.log("conversation:", conversation);
+  console.log("order_id:", conversation?.order_id);
+
   const [messages, setMessages] = useState([]);
   const [teks,     setTeks]     = useState("");
   const [loading,  setLoading]  = useState(true);
@@ -94,11 +102,7 @@ export default function ChatRoom({ user, conversation, pesanan, onBack }) {
   };
 
   const STATUS_OPTIONS = [
-    { id: "desain",   label: "Proses Desain",  color: "#1D4ED8" },
-    { id: "produksi", label: "Produksi",        color: "#166534" },
-    { id: "qc",       label: "Quality Check",   color: "#6D28D9" },
-    { id: "dikirim",  label: "Dikirim",         color: "#0369A1" },
-    { id: "selesai",  label: "Selesai",         color: "#065F46" },
+    { id: "produksi", label: "Produksi", color: "#166534" },
   ];
 
   const handleUpdateStatus = async (status) => {
@@ -297,8 +301,7 @@ export default function ChatRoom({ user, conversation, pesanan, onBack }) {
       </div>
 
       <div style={{ background: "white", borderTop: "1px solid #E5E7EB", padding: "10px 16px 24px" }}>
-        {conversation.order_id && (
-          <div style={{ marginBottom: "8px" }}>
+        <div style={{ marginBottom: "8px" }}>
             <div style={{ fontSize: "11px", fontWeight: "700", color: "#9CA3AF", marginBottom: "6px", letterSpacing: "1px" }}>UPDATE STATUS</div>
             <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
               {STATUS_OPTIONS.map(s => (
@@ -313,7 +316,6 @@ export default function ChatRoom({ user, conversation, pesanan, onBack }) {
               ))}
             </div>
           </div>
-        )}
         <button onClick={handleKirimAcc} disabled={kirim} style={{
           width: "100%", padding: "10px", marginBottom: "10px",
           background: kirim ? "#E5E7EB" : "#0A0A0A", border: "none",

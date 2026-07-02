@@ -116,6 +116,8 @@ export default function Dashboard({ user, onLogout, onBukaPesanan }) {
                 const lastMsg = conv.last_message || "Belum ada pesan";
                 const displayMsg = lastMsg.startsWith("STATUS_UPDATE:") ? "📦 Status diupdate" :
                   lastMsg === "ACC_REQUEST" ? "✅ ACC Request" : lastMsg;
+                console.log("CONV DEBUG:", conv);
+                console.log("CONV DEBUG:", conv);
                 return (
                   <div key={conv.id} onClick={() => onBukaPesanan(conv)}
                     style={{

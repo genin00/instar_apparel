@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">instar-percetakan</string>
+    <string name="title_activity_main">instar-percetakan</string>
+    <string name="package_name">com.instar.percetakan</string>
+    <string name="custom_url_scheme">com.instar.percetakan</string>
+</resources>

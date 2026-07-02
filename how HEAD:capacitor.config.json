@@ -1,5 +1,0 @@
-[33m05768fd[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m fix: add cap copy before sync
-[33m84516b9[m fix: rewrite workflow clean
-[33mca4537c[m fix: remove old workflow
-[33m461ee88[m trigger: rebuild
-[33m5f23b24[m fix: remove init and add android steps
